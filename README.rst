@@ -21,7 +21,7 @@ Just execute ``BrainfuckIntern.py``, and pass the desired output string with
 the ``-o`` parameter:
 ::
 
-    python BrainfuckIntern.py -O 'Hi!'
+    python BrainfuckIntern.py -o 'Hi!'
 
 There are several additional optional parameters for tuning the evolution
 process. Run ``python BrainfuckIntern.py --help`` for full details.
