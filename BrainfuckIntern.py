@@ -1,4 +1,3 @@
-import locale
 import argparse
 import sys
 
@@ -6,8 +5,6 @@ from random import seed
 from datetime import (datetime, timedelta)
 from Population import Population
 from Chromosome import Chromosome
-
-locale.setlocale(locale.LC_ALL, 'en_US')
 
 DESC = (
 '\nA program that learns to write programs! Using a genetic algorithm that\n'
@@ -46,7 +43,7 @@ parser.add_argument('-c', dest='crossover', type=float, default=0.8, help=(
         'The crossover/breeding factor (0.0 to 1.0). Higher means more breeding'
     ))
 
-parser.add_argument('-e', dest='elitism', type=float, default=0.6, help=(
+parser.add_argument('-e', dest='elitism', type=float, default=0.4, help=(
         'The elitism factor (0.0 to 1.0). Higher means a stricter selection '
         'process, e.g. a factor of 0.8 means only the fittest 20%% of the '
         ' population are selected for breeding & mutation, while a factor of '
@@ -56,8 +53,7 @@ parser.add_argument('-e', dest='elitism', type=float, default=0.6, help=(
 args = parser.parse_args()
 
 def print_summary(total, time):
-    grouped = locale.format("%d", total, grouping=True)
-    print 'Tried %s Brainfuck programs, total time %s' % (grouped,
+    print 'Tried %s Brainfuck programs, total time %s' % (total,
         str(timedelta(seconds=int(time.total_seconds()))))
 
 def main():
@@ -71,9 +67,14 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    print "Generating %d random Brainfuck programs..." % args.size
     start = datetime.now()
     seed(start)
+
+    if args.file == None:
+        print "Generating %d random Brainfuck programs..." % args.size
+    else:
+        print "Reading saved state from %s..." % args.file
+
     P = Population(Chromosome.getRandom, size=args.size, elitism=args.elitism,
         crossover=args.crossover, mutation=args.mutation, conf=string)
 

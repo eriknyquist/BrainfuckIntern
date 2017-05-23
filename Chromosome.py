@@ -54,7 +54,7 @@ def getRandIndex(item):
 
     return ix
 
-def program(stmts=5):
+def program(stmts=20):
     prog = ""
     for i in range(stmts):
         prog += randStmt()
@@ -158,6 +158,8 @@ class Chromosome:
 
             if ret == 0:
                 return 0
+
+            ret += len(gene)
 
         return ret
 

@@ -13,16 +13,16 @@ class Control:
         self.i -= 1
 
     def incrementData(self):
-        if self.tape[self.i] == 255:
-            self.tape[self.i] = 0
-        else:
-            self.tape[self.i] += 1
+        #if self.tape[self.i] == 255:
+        #    self.tape[self.i] = 0
+        #else:
+        self.tape[self.i] += 1
 
     def decrementData(self):
-        if self.tape[self.i] == 0:
-            self.tape[self.i] = 255
-        else:
-            self.tape[self.i] -= 1
+        #if self.tape[self.i] == 0:
+        #    self.tape[self.i] = 255
+        #else:
+        self.tape[self.i] -= 1
 
     def get(self):
         return self.tape[self.i]
