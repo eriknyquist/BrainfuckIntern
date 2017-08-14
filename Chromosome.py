@@ -57,6 +57,7 @@ def program(stmts=20):
 
 class Chromosome:
     target = "hi!"
+    optimize = False
 
     def __init__(self, gene):
         self.gene = gene
@@ -160,6 +161,9 @@ class Chromosome:
 
             if ret == 0:
                 return 0
+
+        if self.optimize:
+            ret += len(gene)
 
         return ret
 

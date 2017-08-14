@@ -18,7 +18,7 @@ class Population:
     _tournamentSize = 3
 
     def __init__(self, getRandom, size=1024, elitism=0.5, crossover=0.5,
-                 mutation=0.5, conf=None):
+                 mutation=0.5, conf=None, optimize=False):
         if conf == None:
             self.top = 0xffffffff
             self.elitism = elitism
@@ -28,6 +28,7 @@ class Population:
             self.total = 0
             self.gen = 1
 
+            Chromosome.optimize = optimize
             self.pop = [getRandom() for _ in range(size)]
             self.total = self.size
         else:

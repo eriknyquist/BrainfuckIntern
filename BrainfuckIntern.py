@@ -16,12 +16,12 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter, epilog=(
         '\nExample:\n\n'
         'Evolve a program that prints "hi!"\n\n'
-        '  >  python Brainfuck.py -o "hi!"\n\n'
+        '  >  python Brainfuck.py "hi!"\n\n'
     ), description=DESC)
 
 req = parser.add_argument_group('Required (exactly one must be defined)')
 
-req.add_argument('-o', dest='output', type=str, default=None, help=(
+req.add_argument(dest='output', type=str, default=None, help=(
         'The target output string of a Brainfuck program. Evolution will stop'
         ' when a program is created that can produce this output string'
     ))
@@ -50,6 +50,14 @@ parser.add_argument('-e', dest='elitism', type=float, default=0.5, help=(
         '0.0 selects the entire population'
     ))
 
+parser.add_argument('-o', dest='optimize', action='store_true', default=False,
+        help=( 'If true, BrainfuckIntern will attempt to optimise by removing '
+            'unnecessary Brainfuck code from its programs. This will result in '
+            'shorter, more sane-looking programs, however it can also slow '
+            'the evolution process considerably, since there will be less '
+            'variety in the "gene pool"'
+    ))
+
 args = parser.parse_args()
 
 def print_summary(total, time):
@@ -76,7 +84,8 @@ def main():
         print "Reading saved state from %s..." % args.file
 
     P = Population(Chromosome.getRandom, size=args.size, elitism=args.elitism,
-        crossover=args.crossover, mutation=args.mutation, conf=string)
+        crossover=args.crossover, mutation=args.mutation, conf=string,
+        optimize=args.optimize)
 
     print "Starting evolution\n"
     try:
