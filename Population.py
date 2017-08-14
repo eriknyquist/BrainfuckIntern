@@ -20,6 +20,7 @@ class Population:
     def __init__(self, getRandom, size=1024, elitism=0.5, crossover=0.5,
                  mutation=0.5, conf=None):
         if conf == None:
+            self.top = 0xffffffff
             self.elitism = elitism
             self.mutation = mutation
             self.crossover = crossover
@@ -42,7 +43,8 @@ class Population:
         best = choice(self.pop)
         for i in range(Population._tournamentSize):
             cont = choice(self.pop)
-            if (cont.fitness < best.fitness): best = cont
+            if cont.fitness < best.fitness:
+                best = cont
 
         return best
 
@@ -75,6 +77,7 @@ class Population:
         """
         Method to evolve the population of chromosomes.
         """
+        self.top = self.pop[0].fitness
         size = len(self.pop)
         idx = int(round(size * self.elitism, -1))
         buf = self.pop[:idx]
@@ -122,7 +125,7 @@ class Population:
             self.evolve()
             end = time.time()
 
-            if verbose:
+            if self.pop[0].fitness != self.top and verbose:
                 print("Generation %d (fitness=%d, time=%.4f): %s\n" %
                     (self.gen, self.pop[0].fitness, end - start,
                     str(self.pop[0])))

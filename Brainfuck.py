@@ -4,30 +4,39 @@ import time
 class Control:
     def __init__(self, tape_size):
         self.tape = bytearray(tape_size)
+        self.size = tape_size
         self.i = 0
 
-    def incrementPointer(self):
-        self.i += 1
+    def __checkIndex(self):
+        if self.i < 0 or self.i >= self.size:
+            raise IndexError('Memory access outside cells 0-%d' % self.size)
 
-    def decrementPointer(self):
-        self.i -= 1
+    def incrementPointer(self, num=1):
+        self.i += num
 
-    def incrementData(self):
-        #if self.tape[self.i] == 255:
-        #    self.tape[self.i] = 0
-        #else:
-        self.tape[self.i] += 1
+    def decrementPointer(self, num=1):
+        self.i -= num
 
-    def decrementData(self):
-        #if self.tape[self.i] == 0:
-        #    self.tape[self.i] = 255
-        #else:
-        self.tape[self.i] -= 1
+    def incrementData(self, num=1):
+        self.__checkIndex()
+        if (self.tape[self.i] + num) > 255:
+            self.tape[self.i] = (self.tape[self.i] + num) - 255 - 1
+        else:
+            self.tape[self.i] += num
+
+    def decrementData(self, num=1):
+        self.__checkIndex()
+        if (self.tape[self.i] - num) < 0:
+            self.tape[self.i] = 255 + 1 + (self.tape[self.i] - num)
+        else:
+            self.tape[self.i] -= num
 
     def get(self):
+        self.__checkIndex()
         return self.tape[self.i]
 
     def put(self, intVal):
+        self.__checkIndex()
         self.tape[self.i] = intVal
 
 
@@ -49,7 +58,18 @@ def unmatched(brace):
     print "Error: unmatched '" + brace + "' symbol"
     return None
 
-def interpret(program, stdin=None, time_limit=None, tape_size=300000,
+def count_dupes_ahead(string, index):
+    ret = 0
+    i = index
+    end = len(string) - 1
+
+    while (i < end) and (string[i + 1] == string[i]):
+        i += 1
+        ret += 1
+
+    return ret
+
+def interpret(program, stdin=None, time_limit=None, tape_size=30000,
               buffer_stdout=False):
     ctrl = Control(tape_size)
     if stdin != None:
@@ -67,20 +87,24 @@ def interpret(program, stdin=None, time_limit=None, tape_size=300000,
         c = program[i]
 
         if c == '>':
-            ctrl.incrementPointer()
-            i += 1
+            num = count_dupes_ahead(program, i) + 1
+            ctrl.incrementPointer(num)
+            i += num
 
         elif c == '<':
-            ctrl.decrementPointer()
-            i += 1
+            num = count_dupes_ahead(program, i) + 1
+            ctrl.decrementPointer(num)
+            i += num
 
         elif c == '+':
-            ctrl.incrementData()
-            i += 1
+            num = count_dupes_ahead(program, i) + 1
+            ctrl.incrementData(num)
+            i += num
 
         elif c == '-':
-            ctrl.decrementData()
-            i += 1
+            num = count_dupes_ahead(program, i) + 1
+            ctrl.decrementData(num)
+            i += num
 
         elif c == '[':
             # Add this loop to the stack, if not already added
@@ -141,4 +165,5 @@ def interpret(program, stdin=None, time_limit=None, tape_size=300000,
 
     if len(loops) != 0:
         raise ValueError("Unmatched '['")
+
     return ret

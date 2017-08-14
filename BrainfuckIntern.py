@@ -39,11 +39,11 @@ parser.add_argument('-m', dest='mutation', type=float, default=0.5, help=(
         'The mutation factor (0.0 to 1.0). Higher means more mutation'
     ))
 
-parser.add_argument('-c', dest='crossover', type=float, default=0.8, help=(
+parser.add_argument('-c', dest='crossover', type=float, default=0.5, help=(
         'The crossover/breeding factor (0.0 to 1.0). Higher means more breeding'
     ))
 
-parser.add_argument('-e', dest='elitism', type=float, default=0.4, help=(
+parser.add_argument('-e', dest='elitism', type=float, default=0.5, help=(
         'The elitism factor (0.0 to 1.0). Higher means a stricter selection '
         'process, e.g. a factor of 0.8 means only the fittest 20%% of the '
         ' population are selected for breeding & mutation, while a factor of '

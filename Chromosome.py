@@ -9,7 +9,6 @@ import Brainfuck
 
 binFile = 'testBin.out'
 max_run_secs = 0.05
-ptr = 0
 
 MOST_UNFIT = 0xffffffff
 
@@ -20,26 +19,21 @@ def repeat(string, limit=16):
     return ret
 
 def randStmt():
-    global ptr
+    ret = ""
 
-    op = choice('LL-+<>.')
-    if op == 'L':
-        return '[' + randStmt() + ']'
-    elif op == '-':
-        return repeat('-')
-    elif op == '+':
-        return repeat('+')
-    elif op == '>':
-        ret = repeat('>')
-        ptr += len(ret)
-        return ret
-    elif op == '<':
-        if ptr == 0:
-            return ""
+    for i in range(1, 3):
+        action = choice([
+            lambda: '[' + randStmt() + ']',
+            lambda: repeat('-'),
+            lambda: repeat('+'),
+            lambda: repeat('>'),
+            lambda: repeat('<'),
+            lambda: '.'
+        ])
 
-        return repeat('<', limit=ptr)
-    else:
-        return '.'
+        ret += action()
+
+    return ret
 
 def garbage():
     return ''.join([choice('[]<>-+.') for _ in range(32)])
@@ -81,66 +75,74 @@ class Chromosome:
         return [Chromosome(child1), Chromosome(child2)]
 
     def mutate(self):
-        gene = self.gene
-        pick = choice('mcCherg')
-        #pick = choice('cCerg')
 
-        if pick == 'm':
-            gene = list(gene)
-            # Pick a random character and move it to a new random location
-            old = getRandIndex(gene)
-            save = gene[old]
-            del(gene[old])
-            new = getRandIndex(gene)
-
-            gene = ''.join(gene[:new] + [save] + gene[new:])
-
-        elif pick == 'c':
-            # Randomly copy a character
-            ix = getRandIndex(gene)
-            gene = gene[:ix] + gene[ix] + gene[ix:]
-
-        elif pick == 'C':
-            # Randomly add some more characters to the gene
-            ix = getRandIndex(gene)
-            gene = gene[:ix] + randStmt() + gene[ix:]
-
-        elif pick == 'h':
-            gene = list(gene)
-            # Change a random character
-            ix = getRandIndex(gene)
-            char = choice(".>-+")
-            gene[ix] = char
-            gene = ''.join(gene)
-
-        elif pick == 'e':
-            # Snip a few characters off the beginning/end of the gene
-            size = randint(1, int(len(gene) / 2))
-            if randint(0, 1) == 0:
-                gene = gene[:-size]
-            else:
-                gene = gene[size:]
-
-        elif pick == 'r':
-            # Randomly remove a character
-            ix = getRandIndex(gene)
-            gene = gene[:ix - 1] + gene[ix + 1:]
-
-        elif pick == 'g':
-            # Add some random garbage code
-            ix = getRandIndex(gene)
-            gene = gene[:ix] + garbage() + gene[ix:]
-
-        if len(gene) < 2:
+        if len(self.gene) <= 2:
             return self.getRandom()
 
-        return Chromosome(gene)
+        def mutate_move(G):
+            # Pick a random character and move it to a new random location
+            ret = list(G)
+            old = getRandIndex(ret)
+            save = ret[old]
+            del(ret[old])
+            new = getRandIndex(ret)
+
+            return ''.join(ret[:new] + [save] + ret[new:])
+
+        def mutate_copy(G):
+            # Randomly copy a character
+            ix = getRandIndex(G)
+            return G[:ix] + G[ix] + G[ix:]
+
+        def mutate_add_char(G):
+            # Randomly add a character
+            ix = getRandIndex(G)
+            return G[:ix] + choice('.><+-') + G[ix:]
+
+        def mutate_add_str(G):
+            # Randomly add some more characters to the gene
+            ix = getRandIndex(G)
+            return G[:ix] + randStmt() + G[ix:]
+
+        def mutate_change(G):
+            # Change a random character
+            ret = list(G)
+            ix = getRandIndex(ret)
+            char = choice(".><-+")
+            ret[ix] = char
+            return ''.join(ret)
+
+        def mutate_snip(G):
+            # Snip a few characters off the beginning/end of the gene
+            size = randint(1, int(len(G) / 2))
+            if randint(0, 1) == 0:
+                return G[:-size]
+
+            return G[size:]
+
+
+        def mutate_remove(G):
+            # Randomly remove a character
+            ix = getRandIndex(G)
+            return G[:ix - 1] + G[ix + 1:]
+
+        def mutate_add_garbage(G):
+            # Add some random garbage code
+            ix = getRandIndex(G)
+            return G[:ix] + garbage() + G[ix:]
+
+        action = choice([
+            mutate_move, mutate_copy, mutate_add_char, mutate_add_str,
+            mutate_change, mutate_snip, mutate_remove, mutate_add_garbage
+        ])
+
+        return Chromosome(action(self.gene))
 
     def __updateFitness(self, gene):
         try:
             out = Brainfuck.interpret(gene, time_limit=max_run_secs,
                                       buffer_stdout=True)
-        except (ValueError, IndexError):
+        except (IndexError, ValueError):
             return MOST_UNFIT
 
         if out == None or len(out) < 1:
@@ -153,13 +155,11 @@ class Chromosome:
         else:
             ret = 0
             for i in range(len(out)):
-                diff = (len(out) - i) * abs(ord(out[i]) - ord(self.target[i]))
-                ret += diff * diff
+                pos = len(out) - i
+                ret +=  (pos * pos) * abs(ord(out[i]) - ord(self.target[i]))
 
             if ret == 0:
                 return 0
-
-            ret += len(gene)
 
         return ret
 
@@ -167,10 +167,5 @@ class Chromosome:
     def getRandom():
         P = ""
 
-        if random() < 0.2:
-            while len(P) < 2:
-                P = program()
-        else:
-            P = garbage()
-
-        return Chromosome(P)
+        generator = program if random() < 0.5 else garbage
+        return Chromosome(generator())
