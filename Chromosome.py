@@ -5,7 +5,7 @@ import sys
 import signal
 import time
 
-import Brainfuck
+from Brainfuck import interpret, BrainfuckSyntaxError, BrainfuckMemoryError
 
 binFile = 'testBin.out'
 max_run_secs = 0.05
@@ -141,9 +141,9 @@ class Chromosome:
 
     def __updateFitness(self, gene):
         try:
-            out = Brainfuck.interpret(gene, time_limit=max_run_secs,
+            out = interpret(gene, time_limit=max_run_secs,
                                       buffer_stdout=True)
-        except (IndexError, ValueError):
+        except (BrainfuckSyntaxError, BrainfuckMemoryError):
             return MOST_UNFIT
 
         if out == None or len(out) < 1:

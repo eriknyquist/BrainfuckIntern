@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(
 
 req = parser.add_argument_group('Required (exactly one must be defined)')
 
-req.add_argument(dest='output', type=str, default=None, help=(
+req.add_argument('-o', dest='output', type=str, default=None, help=(
         'The target output string of a Brainfuck program. Evolution will stop'
         ' when a program is created that can produce this output string'
     ))
@@ -50,7 +50,7 @@ parser.add_argument('-e', dest='elitism', type=float, default=0.5, help=(
         '0.0 selects the entire population'
     ))
 
-parser.add_argument('-o', dest='optimize', action='store_true', default=False,
+parser.add_argument('-O', dest='optimize', action='store_true', default=False,
         help=( 'If true, BrainfuckIntern will attempt to optimise by removing '
             'unnecessary Brainfuck code from its programs. This will result in '
             'shorter, more sane-looking programs, however it can also slow '
@@ -65,6 +65,11 @@ def print_summary(total, time):
         str(timedelta(seconds=int(time.total_seconds()))))
 
 def main():
+
+    if args.file and args.output:
+        print "Error: can't use -f and -o together"
+        sys.exit(1)
+
     if args.output != None:
         string = None
         Chromosome.target = args.output
