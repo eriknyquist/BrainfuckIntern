@@ -5,7 +5,7 @@ import sys
 import signal
 import time
 
-from Brainfuck import interpret, BrainfuckSyntaxError, BrainfuckMemoryError
+from bfi import interpret, BrainfuckSyntaxError, BrainfuckMemoryError
 
 binFile = 'testBin.out'
 max_run_secs = 0.05

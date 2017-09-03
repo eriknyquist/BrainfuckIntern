@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 class BrainfuckSyntaxError(Exception):
@@ -93,7 +94,7 @@ def interpret(program, stdin=None, time_limit=None, tape_size=30000,
 
     def read_stdin():
         return os.read(0, 1)
-    
+
     def read_buf():
         return stdin.pop()
 
@@ -148,3 +149,17 @@ def interpret(program, stdin=None, time_limit=None, tape_size=30000,
             return None
 
     return ''.join(ret)
+
+
+def main():
+    if len(sys.argv) != 2:
+        print 'Usage: %s <brainfuck source file>'
+        sys.exit(1)
+
+    with open(sys.argv[1], 'r') as fh:
+        prog = fh.read()
+
+    interpret(prog)
+
+if __name__ == "__main__":
+    main()
