@@ -14,6 +14,12 @@ number of errors.
 
 .. image:: x.jpg
 
+Dependencies
+============
+
+BrainfuckIntern requires the `bfi <https://pypi.python.org/pypi/bfi/0.2.6>`_
+library. You can install it with pip, i.e. ``pip install bfi``
+
 Using Brainfuck Intern
 ======================
 

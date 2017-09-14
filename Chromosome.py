@@ -5,7 +5,12 @@ import sys
 import signal
 import time
 
-from bfi import interpret, BrainfuckSyntaxError, BrainfuckMemoryError
+try:
+    from bfi import interpret, BrainfuckSyntaxError, BrainfuckMemoryError
+except ImportError:
+    print ("bfi not installed. Install with 'pip install bfi', or get it from"
+        " https://pypi.python.org/pypi/bfi/0.2.6")
+    sys.exit(1)
 
 binFile = 'testBin.out'
 max_run_secs = 0.05
