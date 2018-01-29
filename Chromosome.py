@@ -1,3 +1,4 @@
+import string
 from random import (choice, random, randint)
 from subprocess import (Popen, PIPE, STDOUT)
 import os
@@ -6,7 +7,7 @@ import signal
 import time
 
 try:
-    from bfi import interpret, BrainfuckSyntaxError, BrainfuckMemoryError
+    from bfi import interpret, BrainfuckSyntaxError
 except ImportError:
     print ("bfi not installed. Install with 'pip install bfi', or get it from"
         " https://pypi.python.org/pypi/bfi/0.2.6")
@@ -69,8 +70,16 @@ class Chromosome:
         self.output = None
         self.fitness = self.__updateFitness(gene)
 
+    def _is_printable(self, data):
+        return set(data).issubset(set(string.printable))
+
     def __str__(self):
-        return '%s (%s)' % (self.gene, self.output)
+        if self._is_printable(self.output):
+            msg = self.output
+        else:
+            msg = "Not printable"
+
+        return '%s (%s)' % (self.gene, msg)
 
     def mate(self, mate):
         geneLen = len(self.gene)
@@ -148,7 +157,7 @@ class Chromosome:
         try:
             out = interpret(gene, time_limit=max_run_secs,
                                       buffer_stdout=True)
-        except (BrainfuckSyntaxError, BrainfuckMemoryError):
+        except (BrainfuckSyntaxError, IndexError):
             return MOST_UNFIT
 
         if out == None or len(out) < 1:

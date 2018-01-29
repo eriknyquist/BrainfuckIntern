@@ -29,7 +29,12 @@ class Population:
             self.gen = 1
 
             Chromosome.optimize = optimize
-            self.pop = [getRandom() for _ in range(size)]
+            self.pop = []
+            for i in range(size):
+                r = getRandom()
+                #print i, r
+                self.pop.append(r)
+
             self.total = self.size
         else:
             self.pop = self.__fromString(conf)
@@ -130,6 +135,7 @@ class Population:
                 print("Generation %d (fitness=%d, time=%.4f): %s\n" %
                     (self.gen, self.pop[0].fitness, end - start,
                     str(self.pop[0])))
+
             self.gen += 1
 
         return self.pop[0]
