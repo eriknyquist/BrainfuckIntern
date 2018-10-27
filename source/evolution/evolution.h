@@ -114,5 +114,6 @@ typedef struct {
 } evolution_cfg_t;
 
 evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg);
+evolution_status_e evolution_stop(void);
 
 #endif

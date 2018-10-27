@@ -17,19 +17,21 @@
 #define DEFAULT_ELITISM         (0.75f)
 #define DEFAULT_MUTATION        (1.0f)
 #define DEFAULT_POPSIZE         (1024)
+#define DEFAULT_OPTGENS         (-1)
 
 static char *target_output =    NULL;
 static int target_output_len =  0;
 static float crossover =        DEFAULT_CROSSOVER;
 static float elitism =          DEFAULT_ELITISM;
 static float mutation =         DEFAULT_MUTATION;
+static int opt_gens =           DEFAULT_OPTGENS;
 
 static long int popsize =       DEFAULT_POPSIZE;
 
 void help_text(char *arg0)
 {
     printf("\nBrainfuck Intern\n\n");
-    printf("Usage: %s [-ecms] <output>\n\n", arg0);
+    printf("Usage: %s [-ecmso] <output>\n\n", arg0);
     printf("-e <elitism>       Defines how many fit organisms are selected\n"
            "                   from the population for each cycle of the\n"
            "                   evolution process (0.0 to 1.0, e.g. 0.25\n"
@@ -52,6 +54,12 @@ void help_text(char *arg0)
            "                   population (integer). Default is %d.\n\n",
                DEFAULT_POPSIZE);
 
+    printf("-o <num>           Once evolution has produced a correct brainfuck\n"
+           "                   program, continue evolving for an additional\n"
+           "                   <num> generations to attempt to shorten the\n"
+           "                   brainfuck program by removing unnecessary bits.\n"
+           "                   0 means optimise infinitely.\n\n");
+
     printf("-h                 Show this text and exit\n\n");
 }
 
@@ -61,13 +69,13 @@ static int parse_float(char optchar, float *dest)
 
     float val = (float)strtod(optarg, &endptr);
     if (endptr != (optarg + strlen(optarg))) {
-        printf("Please provide a value between 0.0 and 1.0 for -%c option\n",
+        printf("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
             optchar);
         return -1;
     }
 
     if ((val < 0.0) || (val > 1.0)) {
-        printf("Please provide a value between 0.0 and 1.0 for -%c option\n",
+        printf("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
             optchar);
         return -1;
     }
@@ -80,7 +88,7 @@ int parse_args(int argc, char *argv[])
 {
     char c;
 
-      while ((c = getopt(argc, argv, "he:c:m:s:")) != -1) {
+      while ((c = getopt(argc, argv, "he:c:m:s:o:")) != -1) {
         switch (c) {
             case 'h':
                 help_text(argv[0]);
@@ -88,28 +96,40 @@ int parse_args(int argc, char *argv[])
             break;
 
             case 'e':
-                if (parse_float('e', &elitism) < 0)
+                if (parse_float('e', &elitism) < 0) {
+                    help_text(argv[0]);
                     return -1;
-
+                }
             break;
 
             case 'c':
-                if (parse_float('c', &crossover) < 0)
+                if (parse_float('c', &crossover) < 0) {
+                    help_text(argv[0]);
                     return -1;
-
+                }
             break;
 
             case 'm':
-                if (parse_float('m', &mutation) < 0)
+                if (parse_float('m', &mutation) < 0) {
+                    help_text(argv[0]);
                     return -1;
-
+                }
             break;
 
             case 's':
                 popsize = atol(optarg);
                 if (popsize < 0) {
                     printf("Invalid size provided for -s option\n");
+                    help_text(argv[0]);
                     return -1;
+                }
+            break;
+
+            case 'o':
+                opt_gens = atoi(optarg);
+                if (opt_gens < 0) {
+                    printf("Invalid value provided for -o option");
+                    help_text(argv[0]);
                 }
             break;
 
@@ -138,5 +158,6 @@ int main(int argc, char *argv[])
 
     srand((unsigned int) time(&t));
 
-    return population_evolve(target_output, popsize, crossover, elitism, mutation);
+    return population_evolve(target_output, popsize, crossover, elitism,
+        mutation, opt_gens);
 }

@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <signal.h>
+
 #include "evolution.h"
 #include "common.h"
 #include "bf_utils.h"
@@ -19,6 +21,8 @@
 #define MUTATE_STR_SIZE  (ORG_MAX_LEN / 32)
 #define ORG_MAX_OUTPUT   (256)
 #define MOST_UNFIT       (1024 * 1024 * 1024)
+
+static int optimise_gens;
 
 /* Possible mutations for organisms during evolution */
 typedef enum {
@@ -56,6 +60,14 @@ typedef struct organism {
 
 static char *target_output;
 static int target_output_len;
+
+static void sighandler(int signo)
+{
+    if (signo == SIGINT) {
+        printf("\nQuitting\n");
+        evolution_stop();
+    }
+}
 
 static uint32_t unfit(organism_t *org)
 {
@@ -108,8 +120,12 @@ static uint32_t assess(void *data)
         }
     }
 
-    if (fitness == 0) {
+    if ((optimise_gens >= 0) && (fitness == 0)) {
         fitness = org->program_len;
+
+        if (optimise_gens > 0) {
+            optimise_gens = (optimise_gens == 1) ? -1: optimise_gens - 1;
+        }
     }
 
     return fitness;
@@ -329,8 +345,9 @@ int check(void *data)
 }
 
 int population_evolve(char *target, int num_items, float crossover,
-        float elitism, float mutation)
+        float elitism, float mutation, int opt_gens)
 {
+    optimise_gens = opt_gens;
     evolution_cfg_t cfg;
     evolution_status_e ret;
 
@@ -350,6 +367,11 @@ int population_evolve(char *target, int num_items, float crossover,
 
     cfg.num_items = num_items;
     cfg.item_size = sizeof(organism_t);
+
+    if (signal(SIGINT, sighandler) == SIG_ERR) {
+        printf("Can't catch SIGINT\n");
+        return -1;
+    }
 
     if ((ret = evolution_evolve(&cfg)) != EVOLUTION_STATUS_SUCCESS) {
         bfi_log("evolution error (%d)", ret);

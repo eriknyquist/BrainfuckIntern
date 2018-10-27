@@ -28,6 +28,8 @@
 
 #define MINVAL(x, y) (((x) < (y)) ? x : y)
 
+static volatile short stopped;
+
 static short popbuf;
 static int nextpos;
 static int elite_border;
@@ -212,7 +214,7 @@ static evolution_status_e check_config(evolution_cfg_t *cfg)
 
 evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
 {
-    evolution_status_e ret;
+    evolution_status_e ret = EVOLUTION_STATUS_SUCCESS;
     uint32_t best, gen;
 
     if ((ret = check_config(evolution_cfg)) != EVOLUTION_STATUS_SUCCESS) {
@@ -230,8 +232,13 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
     gen = 1;
 
     while (ACTIVE_POP(0)->fitness > 0) {
+        if (stopped) {
+            stopped = 0;
+            break;
+        }
+
         if ((ret = evolve()) != EVOLUTION_STATUS_SUCCESS) {
-            return ret;
+            break;
         }
 
         popbuf = !popbuf;
@@ -251,5 +258,11 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
     }
 
     cleanup();
+    return ret;
+}
+
+evolution_status_e evolution_stop(void)
+{
+    stopped = 1;
     return EVOLUTION_STATUS_SUCCESS;
 }

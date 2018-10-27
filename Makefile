@@ -32,4 +32,4 @@ output_dir:
 	[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
 
 clean:
-	@[ -d $(OUTPUT_DIR) ] && rm -rf $(OUTPUT_DIR)
+	[ -d $(OUTPUT_DIR) ] && rm -rf $(OUTPUT_DIR)
