@@ -1,4 +1,4 @@
-Brainfuck Intern: A program that learns to write Brainfuck programs
+Brainfuck Intern: a program that learns to write Brainfuck programs
 ===================================================================
 
 Starting with a bunch of randomly generated nonsense, this program "evolves"
@@ -7,40 +7,47 @@ trial-and-error process that resembles natural selection.
 
 |
 
-I called it "Brainfuck Intern" because its approach to programming is similar
+I called it "brainfuck intern" because its approach to programming is similar
 to most humans' approach when we first start programming (often as an
 intern...): Change random things in the code until you get lucky and reduce the
 number of errors.
 
 .. image:: x.jpg
 
+Supported Platforms
+===================
+
+Linux only. Tested on Debian.
+
 Dependencies
 ============
 
-BrainfuckIntern requires the `bfi <https://pypi.python.org/pypi/bfi/0.2.6>`_
-library. You can install it with pip, i.e. ``pip install bfi``
+- Standard C lib. (glibc)
+- C compiler (tested with GCC and clang)
 
-Using Brainfuck Intern
-======================
+Build
+=====
 
-Just execute ``BrainfuckIntern.py``, and pass the desired output string with
-the ``-o`` parameter:
+Use the default Makefile target:
+
 ::
 
-    python BrainfuckIntern.py 'Hi!'
+    make
 
-There are several additional optional parameters for tuning the evolution
-process. Run ``python BrainfuckIntern.py --help`` for full details.
+The output will be an executable named ``bfintern``. Run it with no arguments
+to see usage information.
 
-Hello, world! by BrainfuckIntern
-================================
+Hello, world! by brainfuck intern
+=================================
 
-BrainfuckIntern created this beautiful Brainfuck program after 20 minutes
+Brainfuck intern created this beautiful Brainfuck program after 20 minutes
 of smashing random bits of garbage together. This program prints "Hello, world!"
 
 ::
-
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    +++++.+++++++++++++++++++++++++>+++++++++++++++++++++++++++++++++++
-    +++++++++<++++.+++++++..+++.>.------------.+<++++++++.--------.+++
-    .------.----+-----.>.
+    >-+-><--+-+->>++++-+++++++++++-++++++++++++-+-+++-+-<+++++++-++++-+--+++++-
+    ++-+++++-+++++++++-++++--++--+-+++-++++-+++++-+-+++++--+-+-+--++++++++++-++
+    +++++--+++--++-++++-+++-+++-++++-+-+++--++-++++-+-++-+-++.++++++++++++++-+-
+    +--++++++-+-++++++--+++-+++++-++.++-++++++..--++++++-.+++>++-++-+--++++++++
+    ++--+-+++++++-+++.------------.<++++-++.-------+--.++-++.------.-----+-----
+    --+<+++++++-+--+>-+++++---+.-+--->+---++-+--++-+-++.--+++>[>+.<<<.+><.->[++
+    +.>>++++.--<-<-<--++.-+++-+]]
