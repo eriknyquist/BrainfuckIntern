@@ -12,6 +12,7 @@
 #include <time.h>
 
 #include "population.h"
+#include "common.h"
 
 #define DEFAULT_CROSSOVER       (0.75f)
 #define DEFAULT_ELITISM         (0.75f)
@@ -75,13 +76,13 @@ static int parse_float(char optchar, float *dest)
 
     float val = (float)strtod(optarg, &endptr);
     if (endptr != (optarg + strlen(optarg))) {
-        printf("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
+        bfi_log("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
             optchar);
         return -1;
     }
 
     if ((val < 0.0) || (val > 1.0)) {
-        printf("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
+        bfi_log("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
             optchar);
         return -1;
     }
@@ -122,7 +123,7 @@ int parse_args(int argc, char *argv[])
             case 's':
                 popsize = atol(optarg);
                 if (popsize < 0) {
-                    printf("Invalid size provided for -s option\n");
+                    bfi_log("Invalid size provided for -s option\n");
                     return -1;
                 }
             break;
@@ -130,7 +131,7 @@ int parse_args(int argc, char *argv[])
             case 'o':
                 opt_gens = atoi(optarg);
                 if (opt_gens < 0) {
-                    printf("Invalid value provided for -o option");
+                    bfi_log("Invalid value provided for -o option");
                     return -1;
                 }
             break;
@@ -138,7 +139,7 @@ int parse_args(int argc, char *argv[])
             case 'l':
                 max_len = atoi(optarg);
                 if (max_len <= 1) {
-                    printf("Invalid value provided for -l option");
+                    bfi_log("Invalid value provided for -l option");
                     return -1;
                 }
             break;

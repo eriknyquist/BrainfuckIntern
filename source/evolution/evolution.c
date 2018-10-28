@@ -168,18 +168,28 @@ static int float_inrange(float val)
     return (val >= 0.0) && (val <= 1.0);
 }
 
+/* Dummy check handler (to avoid always checking if it's NULL */
 static int dummy_check(void *data)
 {
     (void)data;
     return 0;
 }
 
+/* Dummy on_evolve handler (to avoid always checking if it's NULL */
 static int dummy_on_evolve(void *item, uint32_t fitness, uint32_t generation)
 {
     (void)item;
     (void)fitness;
     (void)generation;
     return 0;
+}
+
+/* Dummy on_finish handler (to avoid always checking if it's NULL */
+static void dummy_on_finish(void *item, uint32_t fitness, uint32_t generation)
+{
+    (void)item;
+    (void)fitness;
+    (void)generation;
 }
 
 static evolution_status_e check_config(evolution_cfg_t *cfg)
@@ -209,13 +219,19 @@ static evolution_status_e check_config(evolution_cfg_t *cfg)
         cfg->on_evolve = dummy_on_evolve;
     }
 
+    if (cfg->on_finish == NULL)
+    {
+        cfg->on_finish = dummy_on_finish;
+    }
+
     return EVOLUTION_STATUS_SUCCESS;
 }
 
 evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
 {
     evolution_status_e ret = EVOLUTION_STATUS_SUCCESS;
-    uint32_t best, gen;
+    organism_wrapper_t *best;
+    uint32_t gen;
 
     if ((ret = check_config(evolution_cfg)) != EVOLUTION_STATUS_SUCCESS) {
         return ret;
@@ -228,7 +244,7 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
         return ret;
     }
 
-    best = ACTIVE_POP(0)->fitness;
+    best = ACTIVE_POP(0);
     gen = 1;
 
     while (ACTIVE_POP(0)->fitness > 0) {
@@ -246,10 +262,10 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
 
         sort_population(ACTIVE_POP(0));
 
-        if (ACTIVE_POP(0)->fitness < best) {
-            best = ACTIVE_POP(0)->fitness;
+        if (ACTIVE_POP(0)->fitness < best->fitness) {
+            best = ACTIVE_POP(0);
 
-            if (config->on_evolve(ACTIVE_POP(0)->data, ACTIVE_POP(0)->fitness, gen) != 0) {
+            if (config->on_evolve(best->data, best->fitness, gen) != 0) {
                 break;
             }
         }
@@ -257,6 +273,7 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
         gen++;
     }
 
+    config->on_finish(best->data, best->fitness, gen);
     cleanup();
     return ret;
 }
@@ -265,4 +282,31 @@ evolution_status_e evolution_stop(void)
 {
     stopped = 1;
     return EVOLUTION_STATUS_SUCCESS;
+}
+
+void evolution_get_err_str(evolution_status_e err, char *buf, size_t size)
+{
+    const char *msg;
+
+    switch (err) {
+        case EVOLUTION_STATUS_SUCCESS:
+            msg = "Success";
+        break;
+        case EVOLUTION_STATUS_INVALID_DATA:
+            msg = "Invalid configuration data provided";
+        break;
+        case EVOLUTION_STATUS_MEMORY_ERROR:
+            msg = "Unable to allocate memory";
+        break;
+        case EVOLUTION_STATUS_USER_ERROR:
+            msg = "User handler returned a non-zero value";
+        break;
+        case EVOLUTION_STATUS_ERROR:
+            msg = "Error";
+        break;
+        default:
+            msg = "Unknown error";
+    }
+
+    memcpy(buf, msg, size);
 }

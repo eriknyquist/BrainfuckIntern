@@ -15,6 +15,8 @@ typedef struct {
     char data[];
 } organism_wrapper_t;
 
+#define EVOLUTION_MAX_ERR_STR_LEN  (64)
+
 // Status codes returned by evolution.c
 typedef enum {
     // Operation successful
@@ -111,9 +113,20 @@ typedef struct {
     *          evolution will stop
     */
     int (*on_evolve)(void *item, uint32_t fitness, uint32_t generation);
+
+   /**
+    * Called whenever evolution finishes, either by the evolution_stop function
+    * being called or because evolution has produced an item with a fitness of 0
+    *
+    * @param   item        pointer to the fittest item at the time of finishing
+    * @param   fitness     item fitness value
+    * @param   generation  generation number
+    */
+    void (*on_finish)(void *item, uint32_t fitness, uint32_t generation);
 } evolution_cfg_t;
 
 evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg);
 evolution_status_e evolution_stop(void);
+void evolution_get_err_str(evolution_status_e err, char *buf, size_t size);
 
 #endif

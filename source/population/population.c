@@ -65,7 +65,7 @@ static int target_output_len;
 static void sighandler(int signo)
 {
     if (signo == SIGINT) {
-        printf("\nQuitting\n");
+        bfi_log("\nQuitting");
         evolution_stop();
     }
 }
@@ -321,21 +321,25 @@ static int mutate(void *data)
     return 0;
 }
 
-void gen_random(void *data)
+static void gen_random(void *data)
 {
     organism_t *org = (organism_t *)data;
     org->program_len = bf_rand_syms(org->program, ORG_MIN_LEN, org_max_len / 4);
 }
 
-int on_evolve(void *data, uint32_t fitness, uint32_t generation)
+static int on_evolve(void *data, uint32_t fitness, uint32_t generation)
 {
     organism_t *org = (organism_t *)data;
-    printf( "gen     : %u\n"
-            "program : %s\n"
-            "output  : %s\n"
-            "fitness : %u\n\n",
-            generation, org->program, org->output, fitness);
+
+    bfi_log("generation=%u, fitness=%u, output=%s", generation, fitness,
+            org->output);
     return 0;
+}
+
+static void on_finish(void *data, uint32_t fitness, uint32_t generation)
+{
+    organism_t *org = (organism_t *)data;
+    printf("\n\nBest program: %s\n\nOutput: %s\n\n", org->program, org->output);
 }
 
 int check(void *data)
@@ -348,8 +352,10 @@ int check(void *data)
 int population_evolve(char *target, int num_items, float crossover,
         float elitism, float mutation, int opt_gens, int max_len)
 {
+    char err_buf[EVOLUTION_MAX_ERR_STR_LEN];
+
     if ((max_len < ORG_MIN_LEN) || (max_len > ORG_MAX_LEN)) {
-        printf("Max. brainfuck program length must be between %d-%d\n",
+        bfi_log("Max. brainfuck program length must be between %d-%d\n",
                 ORG_MIN_LEN, ORG_MAX_LEN);
         return -1;
     }
@@ -366,6 +372,7 @@ int population_evolve(char *target, int num_items, float crossover,
     cfg.assess = assess;
     cfg.mutate = mutate;
     cfg.on_evolve = on_evolve;
+    cfg.on_finish = on_finish;
     cfg.check = check;
 
     cfg.crossover = crossover;
@@ -377,12 +384,13 @@ int population_evolve(char *target, int num_items, float crossover,
     org_max_len = max_len;
 
     if (signal(SIGINT, sighandler) == SIG_ERR) {
-        printf("Can't catch SIGINT\n");
+        bfi_log("Can't catch SIGINT\n");
         return -1;
     }
 
     if ((ret = evolution_evolve(&cfg)) != EVOLUTION_STATUS_SUCCESS) {
-        bfi_log("evolution error (%d)", ret);
+        evolution_get_err_str(ret, err_buf, sizeof(err_buf));
+        bfi_log("Evolution error: %s", err_buf);
         return -1;
     }
 
