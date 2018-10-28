@@ -34,13 +34,13 @@ Use the default Makefile target:
 
     make
 
-The output will be an executable named ``bfintern``. Run it with no arguments
-to see usage information.
+This will create a directory called ``build`` and an executable called
+``build/bfintern``. Run it with no arguments to see usage information.
 
 Hello, world! by brainfuck intern
 =================================
 
-Brainfuck intern created this beautiful Brainfuck program after 20 minutes
+Brainfuck intern created this beautiful Brainfuck program after a minute or so
 of smashing random bits of garbage together. This program prints "Hello, world!"
 
 ::
