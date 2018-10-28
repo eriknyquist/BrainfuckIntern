@@ -224,7 +224,7 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
     config = evolution_cfg;
     elite_border = (int)((float)config->num_items * config->elitism);
 
-    if ((initialize()) != EVOLUTION_STATUS_SUCCESS) {
+    if ((ret = initialize()) != EVOLUTION_STATUS_SUCCESS) {
         return ret;
     }
 

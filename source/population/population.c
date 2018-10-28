@@ -15,14 +15,15 @@
 #include "common.h"
 #include "bf_utils.h"
 
-#define ORG_MAX_LEN      (2048)
+#define ORG_MAX_LEN      (4096)
 #define ORG_MIN_LEN      (12)
 #define MAX_HRSIZE_LEN   (12)
-#define MUTATE_STR_SIZE  (ORG_MAX_LEN / 32)
+#define MUTATE_STR_SIZE  (64)
 #define ORG_MAX_OUTPUT   (256)
 #define MOST_UNFIT       (1024 * 1024 * 1024)
 
 static int optimise_gens;
+static int org_max_len;
 
 /* Possible mutations for organisms during evolution */
 typedef enum {
@@ -52,10 +53,10 @@ typedef enum {
 
 /* A randomly evolved brainfuck program */
 typedef struct organism {
-    char program[ORG_MAX_LEN];
-    char output[ORG_MAX_OUTPUT];
     int program_len;
     int output_len;
+    char output[ORG_MAX_OUTPUT];
+    char program[];
 } organism_t;
 
 static char *target_output;
@@ -143,8 +144,8 @@ static void breed(void *parent1, void *parent2, void *child1, void *child2)
     int p1i = randrange(p1->program_len / 4, (p1->program_len / 4) * 3);
     int p2i = randrange(p2->program_len / 4, (p2->program_len / 4) * 3);
 
-    if (((p1i + p2i) >= ORG_MAX_LEN) ||
-        (((ORG_MAX_LEN - p1i) + (ORG_MAX_LEN)) >= ORG_MAX_LEN)) {
+    if (((p1i + p2i) >= org_max_len) ||
+        (((org_max_len - p1i) + (org_max_len)) >= org_max_len)) {
         p1i = p1->program_len / 2;
         p2i = p2->program_len / 2;
     }
@@ -182,7 +183,7 @@ static int insert_substring(organism_t *org, char *sub, int size, int i)
     if (i >= org->program_len)
         return -1;
 
-    if ((org->program_len + size + 1) > ORG_MAX_LEN)
+    if ((org->program_len + size + 1) > org_max_len)
         return -1;
 
     /* Save chunk after index */
@@ -323,7 +324,7 @@ static int mutate(void *data)
 void gen_random(void *data)
 {
     organism_t *org = (organism_t *)data;
-    org->program_len = bf_rand_syms(org->program, ORG_MIN_LEN, ORG_MAX_LEN / 4);
+    org->program_len = bf_rand_syms(org->program, ORG_MIN_LEN, org_max_len / 4);
 }
 
 int on_evolve(void *data, uint32_t fitness, uint32_t generation)
@@ -345,8 +346,14 @@ int check(void *data)
 }
 
 int population_evolve(char *target, int num_items, float crossover,
-        float elitism, float mutation, int opt_gens)
+        float elitism, float mutation, int opt_gens, int max_len)
 {
+    if ((max_len < ORG_MIN_LEN) || (max_len > ORG_MAX_LEN)) {
+        printf("Max. brainfuck program length must be between %d-%d\n",
+                ORG_MIN_LEN, ORG_MAX_LEN);
+        return -1;
+    }
+
     optimise_gens = opt_gens;
     evolution_cfg_t cfg;
     evolution_status_e ret;
@@ -366,7 +373,8 @@ int population_evolve(char *target, int num_items, float crossover,
     cfg.mutation = mutation;
 
     cfg.num_items = num_items;
-    cfg.item_size = sizeof(organism_t);
+    cfg.item_size = sizeof(organism_t) + max_len;
+    org_max_len = max_len;
 
     if (signal(SIGINT, sighandler) == SIG_ERR) {
         printf("Can't catch SIGINT\n");
