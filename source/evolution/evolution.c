@@ -33,6 +33,7 @@ static volatile short stopped;
 static short popbuf;
 static int nextpos;
 static int elite_border;
+static organism_wrapper_t *best_item;
 
 static evolution_cfg_t *config;
 organism_wrapper_t *pop = NULL;
@@ -72,7 +73,7 @@ static evolution_status_e initialize(void)
     size_t popsize_bytes;
 
     /* Allocate memory for evolution process */
-    popsize_bytes = I2B(1) * config->num_items * 2;
+    popsize_bytes = (I2B(1) * config->num_items * 2) + I2B(1);
 
     if ((pop = malloc(popsize_bytes)) == NULL) {
         return EVOLUTION_STATUS_MEMORY_ERROR;
@@ -80,6 +81,7 @@ static evolution_status_e initialize(void)
 
     memset(pop, 0, popsize_bytes);
     popbuf = 0;
+    best_item = (organism_wrapper_t *)(((char *)pop) + (popsize_bytes - I2B(1)));
 
     /* Generate initial population of random organisms */
     for (int i = 0; i < config->num_items; i++) {
@@ -230,7 +232,6 @@ static evolution_status_e check_config(evolution_cfg_t *cfg)
 evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
 {
     evolution_status_e ret = EVOLUTION_STATUS_SUCCESS;
-    organism_wrapper_t *best;
     uint32_t gen;
 
     if ((ret = check_config(evolution_cfg)) != EVOLUTION_STATUS_SUCCESS) {
@@ -244,7 +245,7 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
         return ret;
     }
 
-    best = ACTIVE_POP(0);
+    memcpy(best_item, ACTIVE_POP(0), I2B(1));
     gen = 1;
 
     while (ACTIVE_POP(0)->fitness > 0) {
@@ -262,10 +263,11 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
 
         sort_population(ACTIVE_POP(0));
 
-        if (ACTIVE_POP(0)->fitness < best->fitness) {
-            best = ACTIVE_POP(0);
+        if (ACTIVE_POP(0)->fitness < best_item->fitness) {
+            memcpy(best_item, ACTIVE_POP(0), I2B(1));
 
-            if (config->on_evolve(best->data, best->fitness, gen) != 0) {
+            if (config->on_evolve(best_item->data, best_item->fitness, gen)
+                    != 0) {
                 break;
             }
         }
@@ -273,7 +275,7 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
         gen++;
     }
 
-    config->on_finish(best->data, best->fitness, gen);
+    config->on_finish(best_item->data, best_item->fitness, gen);
     cleanup();
     return ret;
 }

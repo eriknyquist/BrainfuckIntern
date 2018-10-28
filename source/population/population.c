@@ -390,7 +390,7 @@ int population_evolve(char *target, int num_items, float crossover,
 
     if ((ret = evolution_evolve(&cfg)) != EVOLUTION_STATUS_SUCCESS) {
         evolution_get_err_str(ret, err_buf, sizeof(err_buf));
-        bfi_log("Evolution error: %s", err_buf);
+        bfi_log(err_buf);
         return -1;
     }
 
