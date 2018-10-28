@@ -30,7 +30,8 @@ static long int popsize =       DEFAULT_POPSIZE;
 
 void help_text(char *arg0)
 {
-    printf("\nBrainfuck Intern (Erik Nyquist 2018)\n\n");
+    printf("\nBrainFuck Intern (Copyright 2018 Erik Nyquist "
+            "<eknyquist@gmail.com>)\n\n");
     printf("Usage: %s [-ecmso] <output>\n\n", arg0);
     printf("-e <elitism>       Defines how many fit organisms are selected\n"
            "                   from the population for each cycle of the\n"
