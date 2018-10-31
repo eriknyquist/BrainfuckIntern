@@ -51,6 +51,42 @@ static organism_wrapper_t *best_item;
 static evolution_cfg_t *config;
 organism_wrapper_t *pop = NULL;
 
+static int float_inrange(float val)
+{
+    return (val >= 0.0) && (val <= 1.0);
+}
+
+/* Dummy check handler (to avoid always checking if it's NULL) */
+static int dummy_check(void *data)
+{
+    (void)data;
+    return 0;
+}
+
+/* Dummy on_evolve handler (to avoid always checking if it's NULL) */
+static int dummy_on_evolve(void *item, uint32_t fitness, uint32_t generation)
+{
+    (void)item;
+    (void)fitness;
+    (void)generation;
+    return 0;
+}
+
+/* Dummy on_new_generation handler (to avoid always checking if it's NULL) */
+static int dummy_on_new_generation(uint32_t generation)
+{
+    (void)generation;
+    return 0;
+}
+
+/* Dummy on_finish handler (to avoid always checking if it's NULL */
+static void dummy_on_finish(void *item, uint32_t fitness, uint32_t generation)
+{
+    (void)item;
+    (void)fitness;
+    (void)generation;
+}
+
 static organism_wrapper_t *tournament(void)
 {
     organism_wrapper_t *curr;
@@ -180,35 +216,6 @@ static evolution_status_e evolve(void)
     return EVOLUTION_STATUS_SUCCESS;
 }
 
-static int float_inrange(float val)
-{
-    return (val >= 0.0) && (val <= 1.0);
-}
-
-/* Dummy check handler (to avoid always checking if it's NULL */
-static int dummy_check(void *data)
-{
-    (void)data;
-    return 0;
-}
-
-/* Dummy on_evolve handler (to avoid always checking if it's NULL */
-static int dummy_on_evolve(void *item, uint32_t fitness, uint32_t generation)
-{
-    (void)item;
-    (void)fitness;
-    (void)generation;
-    return 0;
-}
-
-/* Dummy on_finish handler (to avoid always checking if it's NULL */
-static void dummy_on_finish(void *item, uint32_t fitness, uint32_t generation)
-{
-    (void)item;
-    (void)fitness;
-    (void)generation;
-}
-
 static evolution_status_e check_config(evolution_cfg_t *cfg)
 {
 
@@ -234,6 +241,11 @@ static evolution_status_e check_config(evolution_cfg_t *cfg)
     if (cfg->on_evolve == NULL)
     {
         cfg->on_evolve = dummy_on_evolve;
+    }
+
+    if (cfg->on_new_generation == NULL)
+    {
+        cfg->on_new_generation = dummy_on_new_generation;
     }
 
     if (cfg->on_finish == NULL)
@@ -269,6 +281,11 @@ evolution_status_e evolution_start(evolution_cfg_t *evolution_cfg)
     while (ACTIVE_POP(0)->fitness > 0) {
         if (stopped) {
             stopped = 0;
+            break;
+        }
+
+        if (config->on_new_generation(gen) != 0) {
+            ret = EVOLUTION_STATUS_USER_ERROR;
             break;
         }
 

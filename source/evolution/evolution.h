@@ -115,6 +115,15 @@ typedef struct {
     int (*on_evolve)(void *item, uint32_t fitness, uint32_t generation);
 
    /**
+    * Called at each new generation, before evolution begins
+    *
+    * @param   generation  generation number
+    * @return  0 if evolution should continue. If any nonzero value is returned,
+    *          evolution will stop
+    */
+    int (*on_new_generation)(uint32_t generation);
+
+   /**
     * Called whenever evolution finishes, either by the evolution_stop function
     * being called or because evolution has produced an item with a fitness of 0
     *

@@ -22,7 +22,9 @@
 #define ORG_MAX_OUTPUT   (256)
 #define MOST_UNFIT       (1024 * 1024 * 1024)
 
-static int optimise_gens;
+static uint8_t target_reached;
+static int best_generation = -1;
+static int optimise_gens = -1;
 static int org_max_len;
 
 /* Possible mutations for organisms during evolution */
@@ -122,14 +124,28 @@ static uint32_t assess(void *data)
     }
 
     if ((optimise_gens >= 0) && (fitness == 0)) {
+        if (!target_reached) target_reached = 1;
         fitness = org->program_len;
-
-        if (optimise_gens > 0) {
-            optimise_gens = (optimise_gens == 1) ? -1: optimise_gens - 1;
-        }
     }
 
     return fitness;
+}
+
+static int on_new_generation(uint32_t generation)
+{
+    if ((optimise_gens <= 0) || !target_reached) {
+        return 0;
+    }
+
+    if (best_generation < 0) {
+        best_generation = generation;
+    } else {
+        if ((generation - best_generation) > optimise_gens) {
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 static void breed(void *parent1, void *parent2, void *child1, void *child2)
@@ -370,6 +386,7 @@ int population_evolve(char *target, int num_items, int max_len,
     cfg.assess = assess;
     cfg.mutate = mutate;
     cfg.on_evolve = on_evolve;
+    cfg.on_new_generation = on_new_generation;
     cfg.on_finish = on_finish;
     cfg.check = check;
 
@@ -386,7 +403,9 @@ int population_evolve(char *target, int num_items, int max_len,
         return -1;
     }
 
-    if ((ret = evolution_start(&cfg)) != EVOLUTION_STATUS_SUCCESS) {
+    ret = evolution_start(&cfg);
+    if ((ret != EVOLUTION_STATUS_SUCCESS)
+            && (ret != EVOLUTION_STATUS_USER_ERROR)) {
         bfi_log(evolution_get_err_str(ret));
         return -1;
     }
