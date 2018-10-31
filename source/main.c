@@ -169,6 +169,6 @@ int main(int argc, char *argv[])
 
     srand((unsigned int) time(&t));
 
-    return population_evolve(target_output, popsize, crossover, elitism,
-        mutation, opt_gens, max_len);
+    return population_evolve(target_output, popsize, max_len, crossover,
+        elitism, mutation, opt_gens);
 }

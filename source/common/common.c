@@ -73,21 +73,21 @@ void hrsize (size_t size, char *buf, unsigned int bufsize)
 
 static void timestamp(char *buf, int bufsize)
 {
-	struct timeval tv;
+    struct timeval tv;
     struct tm *tm;
-	int ret;
+    int ret;
 
     gettimeofday(&tv, NULL);
     tm = localtime(&tv.tv_sec);
 
     ret = snprintf(buf, bufsize, "%02d-%02d-%02d %02d:%02d:%02d.%03d",
-		tm->tm_mday, tm->tm_mon + 1, 1900 + tm->tm_year,
-		tm->tm_hour, tm->tm_min, tm->tm_sec, (int)((float)tv.tv_usec / 1000.0));
+        tm->tm_mday, tm->tm_mon + 1, 1900 + tm->tm_year,
+        tm->tm_hour, tm->tm_min, tm->tm_sec, (int)((float)tv.tv_usec / 1000.0));
 
-	/* Null-terminate string if snprintf didn't do it */
-	if (ret > (bufsize - 1)) {
-		buf[bufsize - 1] = 0;
-	}
+    /* Null-terminate string if snprintf didn't do it */
+    if (ret > (bufsize - 1)) {
+        buf[bufsize - 1] = 0;
+    }
 }
 
 /**
@@ -95,13 +95,13 @@ static void timestamp(char *buf, int bufsize)
  */
 void bfi_log(const char* format, ...)
 { 
-	va_list args;
+    va_list args;
     char tm[32];
 
-	timestamp(tm, sizeof(tm));
-  	va_start(args, format);
+    timestamp(tm, sizeof(tm));
+    va_start(args, format);
     printf("[bfintern %s]: ", tm);
-  	vprintf(format, args);
+    vprintf(format, args);
     printf("\n");
-  	va_end(args);
+    va_end(args);
 }

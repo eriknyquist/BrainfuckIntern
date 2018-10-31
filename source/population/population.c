@@ -349,11 +349,9 @@ int check(void *data)
     return org->program_len < ORG_MIN_LEN;
 }
 
-int population_evolve(char *target, int num_items, float crossover,
-        float elitism, float mutation, int opt_gens, int max_len)
+int population_evolve(char *target, int num_items, int max_len,
+        float crossover, float elitism, float mutation, int opt_gens)
 {
-    char err_buf[EVOLUTION_MAX_ERR_STR_LEN];
-
     if ((max_len < ORG_MIN_LEN) || (max_len > ORG_MAX_LEN)) {
         bfi_log("Max. brainfuck program length must be between %d-%d\n",
                 ORG_MIN_LEN, ORG_MAX_LEN);
@@ -388,9 +386,8 @@ int population_evolve(char *target, int num_items, float crossover,
         return -1;
     }
 
-    if ((ret = evolution_evolve(&cfg)) != EVOLUTION_STATUS_SUCCESS) {
-        evolution_get_err_str(ret, err_buf, sizeof(err_buf));
-        bfi_log(err_buf);
+    if ((ret = evolution_start(&cfg)) != EVOLUTION_STATUS_SUCCESS) {
+        bfi_log(evolution_get_err_str(ret));
         return -1;
     }
 

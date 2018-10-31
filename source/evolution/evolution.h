@@ -125,8 +125,30 @@ typedef struct {
     void (*on_finish)(void *item, uint32_t fitness, uint32_t generation);
 } evolution_cfg_t;
 
-evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg);
+/**
+ * Starts the evolution process, and returns when the evolution process completes
+ * (or when evolution_stop is called)
+ *
+ * @param evolution_cfg  pointer to a populated evolution configuration
+ *                       structure. @see evolution_cfg_t
+ * @return EVOLUTION_STATUS_SUCCESS if evolution completed successfully, or
+ *         was terminated by a call to evolution_stop
+ */
+evolution_status_e evolution_start(evolution_cfg_t *evolution_cfg);
+
+/**
+ * Stops the evolution process.
+ *
+ * @return EVOLUTION_STATUS_SUCCESS if evolution was stopped successfully
+ */
 evolution_status_e evolution_stop(void);
-void evolution_get_err_str(evolution_status_e err, char *buf, size_t size);
+
+/**
+ * Provides a descriptive string that corresponds to the provided error code
+ *
+ * @param err  the error code
+ * @return pointer to error string
+ */
+const char *evolution_get_err_str(evolution_status_e err);
 
 #endif

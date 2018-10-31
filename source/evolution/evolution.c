@@ -12,6 +12,19 @@
 #include "evolution.h"
 #include "common.h"
 
+/* Number of error strings, excluding the "unknown" error string */
+#define NUM_ERRS  (5)
+
+static const char *err_strs[NUM_ERRS + 1] = {
+    "Success",                                /* EVOLUTION_STATUS_SUCCESS */
+    "Invalid configuration data provided",    /* EVOLUTION_STATUS_INVALID_DATA*/
+    "Unable to allocate memory",              /* EVOLUTION_STATUS_MEMORY_ERROR*/
+    "User handler returned a non-zero value", /* EVOLUTION_STATUS_USER_ERROR */
+    "Error",                                  /* EVOLUTION_STATUS_ERROR */
+    "Unknown error"
+};
+
+/* Number of items involved in a tournament */
 #define TOURNAMENT_SIZE  (24)
 
 /* Convert number of items to total size in bytes */
@@ -60,12 +73,14 @@ static organism_wrapper_t *tournament(void)
 
 static int cmporgs(const void *a, const void *b)
 {
-    return ((organism_wrapper_t *)a)->fitness - ((organism_wrapper_t *)b)->fitness;
+    return ((organism_wrapper_t *)a)->fitness
+            - ((organism_wrapper_t *)b)->fitness;
 }
 
 static void sort_population(organism_wrapper_t *first)
 {
-    qsort(first, config->num_items, sizeof(organism_wrapper_t) + config->item_size, cmporgs);
+    qsort(first, config->num_items,
+            sizeof(organism_wrapper_t) + config->item_size, cmporgs);
 }
 
 static evolution_status_e initialize(void)
@@ -229,7 +244,10 @@ static evolution_status_e check_config(evolution_cfg_t *cfg)
     return EVOLUTION_STATUS_SUCCESS;
 }
 
-evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
+/**
+ * @see evolution.h
+ */
+evolution_status_e evolution_start(evolution_cfg_t *evolution_cfg)
 {
     evolution_status_e ret = EVOLUTION_STATUS_SUCCESS;
     uint32_t gen;
@@ -280,35 +298,23 @@ evolution_status_e evolution_evolve(evolution_cfg_t *evolution_cfg)
     return ret;
 }
 
+/**
+ * @see evolution.h
+ */
 evolution_status_e evolution_stop(void)
 {
     stopped = 1;
     return EVOLUTION_STATUS_SUCCESS;
 }
 
-void evolution_get_err_str(evolution_status_e err, char *buf, size_t size)
+/**
+ * @see evolution.h
+ */
+const char *evolution_get_err_str(evolution_status_e err)
 {
-    const char *msg;
-
-    switch (err) {
-        case EVOLUTION_STATUS_SUCCESS:
-            msg = "Success";
-        break;
-        case EVOLUTION_STATUS_INVALID_DATA:
-            msg = "Invalid configuration data provided";
-        break;
-        case EVOLUTION_STATUS_MEMORY_ERROR:
-            msg = "Unable to allocate memory";
-        break;
-        case EVOLUTION_STATUS_USER_ERROR:
-            msg = "User handler returned a non-zero value";
-        break;
-        case EVOLUTION_STATUS_ERROR:
-            msg = "Error";
-        break;
-        default:
-            msg = "Unknown error";
+    if ((err < 0) || (err >= NUM_ERRS)) {
+        return err_strs[NUM_ERRS];
     }
 
-    memcpy(buf, msg, size);
+    return err_strs[err];
 }
