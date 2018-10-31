@@ -5,6 +5,8 @@
  * (See LICENSE)
  */
 
+#include <stdint.h>
+
 #ifndef POPULATION_H
 #define POPULATION_H
 
@@ -24,10 +26,11 @@
  *                     has been reached. 0 means infinite additional
  *                     generations (in this case, bfintern will never terminate
  *                     unless terminated by ther user with Ctrl-C)
+ * @param verbose      1 for verbose mode, 0 for normal mode
  *
  * @return  0 if evolution completes successfully
  */
-int population_evolve(char *target, int num_items, int max_len,
-        float crossover, float elitism, float mutation, int opt_gens);
+int population_evolve(char *target, int num_items, int max_len, float crossover,
+        float elitism, float mutation, int opt_gens, uint8_t verbose);
 
 #endif

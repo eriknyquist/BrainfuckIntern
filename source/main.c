@@ -29,12 +29,13 @@ static float mutation =         DEFAULT_MUTATION;
 static int opt_gens =           DEFAULT_OPTGENS;
 static int max_len =            DEFAULT_MAX_LEN;
 static long int popsize =       DEFAULT_POPSIZE;
+static uint8_t verbose =        0;
 
 void help_text(char *arg0)
 {
     printf("\nBrainFuck Intern (Copyright 2018 Erik Nyquist "
             "<eknyquist@gmail.com>)\n\n");
-    printf("Usage: %s [-ecmsol] <output>\n\n", arg0);
+    printf("Usage: %s [-ecmsov] <output>\n\n", arg0);
     printf("-e <elitism>       Defines how many fit organisms are selected\n"
            "                   from the population for each cycle of the\n"
            "                   evolution process (0.0 to 1.0, e.g. 0.25\n"
@@ -67,6 +68,10 @@ void help_text(char *arg0)
            "                   brainfuck program by removing unnecessary bits.\n"
            "                   0 means optimise infinitely.\n\n");
 
+    printf("-v                 Show evolution progress by printing status at\n"
+           "                   each new generation. Default is to only print\n"
+           "                   the final brainfuck program.\n\n");
+
     printf("-h                 Show this text and exit\n\n");
 }
 
@@ -95,7 +100,7 @@ int parse_args(int argc, char *argv[])
 {
     char c;
 
-      while ((c = getopt(argc, argv, "he:c:m:s:o:l:")) != -1) {
+      while ((c = getopt(argc, argv, "hve:c:m:s:o:l:")) != -1) {
         switch (c) {
             case 'h':
                 help_text(argv[0]);
@@ -144,6 +149,10 @@ int parse_args(int argc, char *argv[])
                 }
             break;
 
+            case 'v':
+                verbose = 1;
+            break;
+
             case '?':
                 return -1;
             break;
@@ -170,5 +179,5 @@ int main(int argc, char *argv[])
     srand((unsigned int) time(&t));
 
     return population_evolve(target_output, popsize, max_len, crossover,
-        elitism, mutation, opt_gens);
+        elitism, mutation, opt_gens, verbose);
 }

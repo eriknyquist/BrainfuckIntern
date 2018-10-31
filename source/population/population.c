@@ -67,7 +67,7 @@ static int target_output_len;
 static void sighandler(int signo)
 {
     if (signo == SIGINT) {
-        bfi_log("\nQuitting");
+        printf("\n");
         evolution_stop();
     }
 }
@@ -355,7 +355,7 @@ static int on_evolve(void *data, uint32_t fitness, uint32_t generation)
 static void on_finish(void *data, uint32_t fitness, uint32_t generation)
 {
     organism_t *org = (organism_t *)data;
-    printf("\n\nBest program: %s\n\nOutput: %s\n\n", org->program, org->output);
+    printf("%s\n", org->program);
 }
 
 int check(void *data)
@@ -365,8 +365,8 @@ int check(void *data)
     return org->program_len < ORG_MIN_LEN;
 }
 
-int population_evolve(char *target, int num_items, int max_len,
-        float crossover, float elitism, float mutation, int opt_gens)
+int population_evolve(char *target, int num_items, int max_len, float crossover,
+        float elitism, float mutation, int opt_gens, uint8_t verbose)
 {
     if ((max_len < ORG_MIN_LEN) || (max_len > ORG_MAX_LEN)) {
         bfi_log("Max. brainfuck program length must be between %d-%d\n",
@@ -374,18 +374,21 @@ int population_evolve(char *target, int num_items, int max_len,
         return -1;
     }
 
+    static evolution_cfg_t cfg;
     optimise_gens = opt_gens;
-    evolution_cfg_t cfg;
     evolution_status_e ret;
 
     target_output = target;
     target_output_len = strlen(target);
 
+    if (verbose) {
+        cfg.on_evolve = on_evolve;
+    }
+
     cfg.random = gen_random;
     cfg.breed = breed;
     cfg.assess = assess;
     cfg.mutate = mutate;
-    cfg.on_evolve = on_evolve;
     cfg.on_new_generation = on_new_generation;
     cfg.on_finish = on_finish;
     cfg.check = check;
