@@ -30,8 +30,6 @@ only the following tools at its disposal;
 Surprisingly, this actually produces working brainfuck programs in a relatively
 short time (usually under a minute for strings under 16 chars on my machine).
 
-.. image:: x.jpg
-
 Supported Platforms
 ===================
 
@@ -97,6 +95,8 @@ This will create a directory called ``build`` and an executable called
                            the final brainfuck program.
 
         -h                 Show this text and exit
+
+.. image:: x.jpg
 
 Hello, world! by brainfuck intern
 =================================
