@@ -1,16 +1,34 @@
-Brainfuck Intern: a program that learns to write Brainfuck programs
-===================================================================
+Brainfuck Intern: a very bad brainfuck programmer
+=================================================
 
-Starting with a bunch of randomly generated nonsense, this program "evolves"
-a Brainfuck program to print a specific string of output through a
-trial-and-error process that resembles natural selection.
+Brainfuck intern takes a target string as input, e.g. "Hello, world!", and uses
+an iterative evolution-like process to produce a
+`Brainfuck <https://en.wikipedia.org/wiki/Brainfuck>`_ program that prints the
+target string.
 
+Brainfuck intern knows nothing about brainfuck syntax (for example, that opening
+loop braces need to be matched with the opposite brace). Brainfuck intern has
+only the following tools at its disposal;
+
+* A brainfuck interpreter, to execute brainfuck programs and inspect the output
+* Knowledge of valid brainfuck characters (but now knowledge of how to use them;
+  no syntactic knowledge, can only generate strings containing randomly chosen
+  brainfuck characters)
+* An ability to "mutate" brainfuck programs, by randomly changing, adding or
+  removing characters
+* An ability to "breed" two brainfuck programs to create new brainfuck
+  programs, by randomly combining elements of the two original programs
+* An ability to "assess" brainfuck programs and their output for fitness, e.g.
+  a brainfuck program that has syntactic errors will not run and the interpreter
+  will return an error. This would be the worst possible fitness level. A program
+  that runs successfully in the interpreter but produces no output would be a
+  slightly higher fitness level, but still not great. A program that prints one
+  character would be a higher fitness level, and so on until the highest fitness
+  level, which would be a brainfuck program that prints exactly the target string.
 |
 
-I called it "brainfuck intern" because its approach to programming is similar
-to most humans' approach when we first start programming (often as an
-intern...): Change random things in the code until you get lucky and reduce the
-number of errors.
+Surprisingly, this actually produces working brainfuck programs in a relatively
+short time (usually under a minute for strings under 16 chars on my machine).
 
 .. image:: x.jpg
 
