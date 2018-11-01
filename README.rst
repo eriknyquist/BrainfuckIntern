@@ -11,13 +11,13 @@ loop braces need to be matched with the opposite brace). Brainfuck intern has
 only the following tools at its disposal;
 
 * A brainfuck interpreter, to execute brainfuck programs and inspect the output
-* Knowledge of valid brainfuck characters (but now knowledge of how to use them;
-  no syntactic knowledge, can only generate strings containing randomly chosen
+* Knowledge of valid brainfuck characters (but no knowledge of how to use them;
+  no syntactic knowledge. Can only generate strings containing randomly chosen
   brainfuck characters)
 * An ability to "mutate" brainfuck programs, by randomly changing, adding or
   removing characters
-* An ability to "breed" two brainfuck programs to create new brainfuck
-  programs, by randomly combining elements of the two original programs
+* An ability to "breed" two brainfuck programs to create new programs, by
+  randomly combining elements of the two original programs
 * An ability to "assess" brainfuck programs and their output for fitness, e.g.
   a brainfuck program that has syntactic errors will not run and the interpreter
   will return an error. This would be the worst possible fitness level. A program
