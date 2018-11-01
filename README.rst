@@ -96,8 +96,6 @@ This will create a directory called ``build`` and an executable called
 
         -h                 Show this text and exit
 
-.. image:: x.jpg
-
 Hello, world! by brainfuck intern
 =================================
 
@@ -110,3 +108,8 @@ of smashing random bits of garbage together. This program prints "Hello, world!"
     ++++++++++++++++++++++++><+++++.++++>[+-+<>.+>]++[+++>]<+++++++++<+++..+++.
     +++>++++++++++++++++++++++++++++++.------->+<-----.++[+<+++++.--------.+-++
     +.------.--------.>>+++++++++++++--+++++++++++++++++++++.>].>[>--+>]
+
+What I would say if I was Xzibit
+================================
+
+.. image:: x.jpg
