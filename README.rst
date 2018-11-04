@@ -49,7 +49,7 @@ with no arguments to see usage information:
 
         BrainFuck Intern (Copyright 2018 Erik Nyquist <eknyquist@gmail.com>)
 
-        Usage: bfintern [-ecmsov] <output>
+        Usage: bfintern [-ecmslovh] <output>
 
         -e <elitism>       Defines how many fit organisms are selected
                            from the population for each cycle of the
