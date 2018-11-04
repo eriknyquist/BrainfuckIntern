@@ -1,5 +1,5 @@
 Brainfuck Intern: a very bad brainfuck programmer
-=================================================
+-------------------------------------------------
 
 Brainfuck intern takes a target string as input, e.g. "Hello, world!", and uses
 an iterative evolution-like process to produce a
@@ -25,7 +25,6 @@ only the following tools at its disposal;
   slightly higher fitness level, but still not great. A program that prints one
   character would be a higher fitness level, and so on until the highest fitness
   level, which would be a brainfuck program that prints exactly the target string.
-|
 
 Surprisingly, this actually produces working brainfuck programs in a relatively
 short time (usually under a minute for strings under 16 chars on my machine).
@@ -33,33 +32,24 @@ short time (usually under a minute for strings under 16 chars on my machine).
 Supported Platforms
 ===================
 
-Linux only. Tested on Debian.
+Linux & Windows only. Tested on Debian and Windows 10.
 
-Dependencies
-============
+32 and 64 bit Windows binaries are included (``windows_builds/i686/bfintern.exe``
+and ``windows_builds/x86_64/bfintern.exe``).
 
-- Standard C lib. (glibc)
-- C compiler (tested with GCC and clang)
-
-Build
+Usage
 =====
 
-Use the default Makefile target:
+Run the ``bfintern`` executable from a terminal (or Command Prompt in Windows)
+with no arguments to see usage information:
 
 ::
 
-    make
-
-This will create a directory called ``build`` and an executable called
-``build/bfintern``. Run it with no arguments to see usage information:
-
-::
-
-      $> build/bfintern
+      $> bfintern
 
         BrainFuck Intern (Copyright 2018 Erik Nyquist <eknyquist@gmail.com>)
 
-        Usage: build/bfintern [-ecmsov] <output>
+        Usage: bfintern [-ecmsov] <output>
 
         -e <elitism>       Defines how many fit organisms are selected
                            from the population for each cycle of the
@@ -113,3 +103,25 @@ What I would say if I was Xzibit
 ================================
 
 .. image:: x.jpg
+
+Building from source (Linux only)
+=================================
+
+Dependencies (Linux only)
+#########################
+
+* Standard C lib. (glibc)
+* C compiler (tested with GCC and clang)
+
+Build (Linux only)
+##################
+
+Use the default Makefile target:
+
+::
+
+    make
+
+This will create a directory called ``build`` and an executable called
+``build/bfintern``.
+
