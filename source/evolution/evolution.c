@@ -329,7 +329,7 @@ evolution_status_e evolution_stop(void)
  */
 const char *evolution_get_err_str(evolution_status_e err)
 {
-    if ((err < 0) || (err >= NUM_ERRS)) {
+    if (err >= NUM_ERRS) {
         return err_strs[NUM_ERRS];
     }
 
