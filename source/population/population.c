@@ -9,11 +9,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <signal.h>
 
 #include "evolution.h"
 #include "common.h"
 #include "bf_utils.h"
+
+#if WINDOWS
+#include <windows.h>
+#else
+#include <signal.h>
+#endif
 
 #define ORG_MAX_LEN      (4096)
 #define ORG_MIN_LEN      (12)
@@ -64,12 +69,21 @@ typedef struct organism {
 static char *target_output;
 static int target_output_len;
 
+#if WINDOWS
+BOOL WINAPI win_sighandler(DWORD type)
+{
+    if (type == CTRL_C_EVENT) {
+#else
 static void sighandler(int signo)
 {
     if (signo == SIGINT) {
+#endif /* WINDOWS */
         printf("\n");
         evolution_stop();
     }
+#if WINDOWS
+    return TRUE;
+#endif /* WINDOWS*/
 }
 
 static uint32_t unfit(organism_t *org)
@@ -401,8 +415,12 @@ int population_evolve(char *target, int num_items, int max_len, float crossover,
     cfg.item_size = sizeof(organism_t) + max_len;
     org_max_len = max_len;
 
+#if WINDOWS
+    if (!SetConsoleCtrlHandler(win_sighandler, TRUE)) {
+#else
     if (signal(SIGINT, sighandler) == SIG_ERR) {
-        bfi_log("Can't catch SIGINT\n");
+#endif /* WINDOWS */
+        bfi_log("Can't catch Ctrl-C signal\n");
         return -1;
     }
 

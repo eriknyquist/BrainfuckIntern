@@ -5,6 +5,7 @@ SRC_DIRS := \
 	$(SRC_ROOT)/evolution \
 	$(SRC_ROOT)/population \
 	$(SRC_ROOT)/bf_utils \
+	$(SRC_ROOT)/portable_getopt \
 	$(SRC_ROOT)/common
 
 VPATH := $(SRC_DIRS)

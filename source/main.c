@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <time.h>
 
+#include "portable_getopt.h"
 #include "population.h"
 #include "common.h"
 
@@ -100,7 +100,7 @@ int parse_args(int argc, char *argv[])
 {
     char c;
 
-      while ((c = getopt(argc, argv, "hve:c:m:s:o:l:")) != -1) {
+      while ((c = portable_getopt(argc, argv, "hve:c:m:s:o:l:")) != -1) {
         switch (c) {
             case 'h':
                 help_text(argv[0]);

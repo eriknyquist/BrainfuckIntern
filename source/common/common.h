@@ -3,6 +3,14 @@
 
 #include "evolution.h"
 
+#if defined __linux__
+#define WINDOWS 0
+#elif defined _WIN32
+#define WINDOWS 1
+#else
+#error "Platform not supported"
+#endif
+
 /**
  * Get  random number in specific range
  *

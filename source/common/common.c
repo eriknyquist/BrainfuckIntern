@@ -3,8 +3,15 @@
 #include <stdarg.h>
 #include <string.h>
 #include <inttypes.h>
+
+#include "common.h"
+
+#if WINDOWS
+#include <windows.h>
+#else
 #include <sys/time.h>
 #include <time.h>
+#endif /* WINDOWS */
 
 #define NUMNAMES (7)
 
@@ -73,9 +80,18 @@ void hrsize (size_t size, char *buf, unsigned int bufsize)
 
 static void timestamp(char *buf, int bufsize)
 {
-    struct timeval tv;
-    struct tm *tm;
     int ret;
+#if WINDOWS
+    SYSTEMTIME tm;
+
+    GetLocalTime(&tm);
+
+    ret = snprintf(buf, bufsize, "%02d-%02d-%02d %02d:%02d:%02d.%03d",
+        tm.wDay, tm.wMonth, tm.wYear, tm.wHour, tm.wMinute, tm.wSecond,
+        tm.wMilliseconds);
+#else
+    struct tm *tm;
+    struct timeval tv;
 
     gettimeofday(&tv, NULL);
     tm = localtime(&tv.tv_sec);
@@ -83,6 +99,7 @@ static void timestamp(char *buf, int bufsize)
     ret = snprintf(buf, bufsize, "%02d-%02d-%02d %02d:%02d:%02d.%03d",
         tm->tm_mday, tm->tm_mon + 1, 1900 + tm->tm_year,
         tm->tm_hour, tm->tm_min, tm->tm_sec, (int)((float)tv.tv_usec / 1000.0));
+#endif /* WINDOWS */
 
     /* Null-terminate string if snprintf didn't do it */
     if (ret > (bufsize - 1)) {
