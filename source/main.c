@@ -35,7 +35,7 @@ void help_text(char *arg0)
 {
     printf("\nBrainFuck Intern (Copyright 2018 Erik Nyquist "
             "<eknyquist@gmail.com>)\n\n");
-    printf("Usage: %s [-ecmsov] <output>\n\n", arg0);
+    printf("Usage: %s [-ecmslovh] <output>\n\n", arg0);
     printf("-e <elitism>       Defines how many fit organisms are selected\n"
            "                   from the population for each cycle of the\n"
            "                   evolution process (0.0 to 1.0, e.g. 0.25\n"
