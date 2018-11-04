@@ -34,8 +34,8 @@ Supported Platforms
 
 Linux & Windows only. Tested on Debian and Windows 10.
 
-32 and 64 bit Windows binaries are included (``windows_builds/i686/bfintern.exe``
-and ``windows_builds/x86_64/bfintern.exe``).
+32 and 64 bit Windows binaries are included (``windows_build/i686/bfintern.exe``
+and ``windows_build/x86_64/bfintern.exe``).
 
 Usage
 =====
