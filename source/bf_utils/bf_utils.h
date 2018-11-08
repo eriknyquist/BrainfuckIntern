@@ -11,12 +11,16 @@
 /**
  * Interpret a BF program and place the output (if any) in 'output'
  *
- * @param  input        BF string to interpret
- * @param  output       location to store output
- * @param  output_size  maximum number of output characters
- * @return -1 if interpretation failed, or number of output characters generated
+ * @param  input             BF string to interpret
+ * @param  output            location to store output
+ * @param  output_size       maximum number of output characters
+ * @param  max_instructions  maximum number of instructions to execute.
+ *                           0 for infinite.
+ * @return -1 if interpretation failed, or max. number of output characters
+ *         exceeded, or max. number of instructions exceeded
  */
-int bf_interpret(const char *input, char *output, int output_size);
+int bf_interpret(const char *input, char *output, int max_output,
+    int max_instructions);
 
 /**
  * Generate a string of randomly-selected BF symbols

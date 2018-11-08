@@ -16,8 +16,6 @@
 
 #define index_valid(i) (i >= 0 && i < TAPE_SIZE)
 
-#define MAX_EP 100000
-
 typedef enum {
     BF_INC = 0,
     BF_DEC = 1,
@@ -93,14 +91,18 @@ int bf_rand_syms(char *output, int min_size, int max_size)
 /**
  * @see bf_utils.h
  */
-int bf_interpret(const char *input, char *output, int output_size)
+int bf_interpret(const char *input, char *output, int max_output,
+    int max_instructions)
 {
     unsigned char tape[TAPE_SIZE];
 
     int depth = 0;
 
     /* No. of instructions executed */
-    int ep = 0;
+    int ep;
+
+    /* Index of current instruction */
+    int i;
 
     /* Index to current instruction in program */
     int p = 0;
@@ -111,8 +113,8 @@ int bf_interpret(const char *input, char *output, int output_size)
     memset(tape, 0, TAPE_SIZE);
     pos = 0;
 
-    for(int i = 0; input[i]; i++) {
-        if (ep >= MAX_EP) {
+    for(i = 0, ep = 0; input[i]; i++, ep++) {
+        if ((max_instructions > 0) && (ep >= max_instructions)) {
             return -1;
         }
 
@@ -141,7 +143,7 @@ int bf_interpret(const char *input, char *output, int output_size)
             if (!index_valid(p))
                 return -1;
 
-            if (out >= output_size) {
+            if (out >= max_output) {
                 return -1;
             }
 
@@ -152,6 +154,11 @@ int bf_interpret(const char *input, char *output, int output_size)
                 return -1;
 
             if (tape[p]) {
+                // Ignore obvious infinite loops
+                if (input[i + 1] == BF_CLOSE) {
+                    return -1;
+                }
+
                 if (stack_push(i) < 0) {
                     return -1;
                 }
@@ -193,8 +200,6 @@ int bf_interpret(const char *input, char *output, int output_size)
                 depth--;
             }
         }
-
-        ep++;
     }
 
     if (depth != 0)

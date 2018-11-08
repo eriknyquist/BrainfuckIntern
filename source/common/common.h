@@ -11,6 +11,9 @@
 #error "Platform not supported"
 #endif
 
+#define MIN_VAL(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX_VAL(x, y) (((x) > (y)) ? (x) : (y))
+
 /**
  * Get  random number in specific range
  *

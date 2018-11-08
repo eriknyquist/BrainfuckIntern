@@ -20,17 +20,20 @@
 #include <signal.h>
 #endif
 
-#define ORG_MAX_LEN      (4096)
-#define ORG_MIN_LEN      (12)
-#define MAX_HRSIZE_LEN   (12)
-#define MUTATE_STR_SIZE  (64)
-#define ORG_MAX_OUTPUT   (256)
-#define MOST_UNFIT       (1024 * 1024 * 1024)
+#define MAX_INSTRUCTIONS_LIMIT       (100000)
+#define MAX_INSTRUCTIONS_MULTIPLIER  (3.5f)
+#define ORG_MAX_LEN                  (4096)
+#define ORG_MIN_LEN                  (12)
+#define MAX_HRSIZE_LEN               (12)
+#define MUTATE_STR_SIZE              (64)
+#define ORG_MAX_OUTPUT               (256)
+#define MOST_UNFIT                   (1024 * 1024 * 1024)
 
 static uint8_t target_reached;
 static int best_generation = -1;
 static int optimise_gens = -1;
 static int org_max_len;
+static int max_instructions;
 
 /* Possible mutations for organisms during evolution */
 typedef enum {
@@ -94,6 +97,27 @@ static uint32_t unfit(organism_t *org)
 }
 
 /**
+ * Calculate the maximum amount of BF instructions that should be reasonably
+ * required to write a program that prints the string 's'. Very finger-in-the-air.
+ * Needed to get a rough estimate of the max. number of instructions we should
+ * pass to bf_interpret, meaning BF programs that execute more instructions than
+ * this will be considered to be stuck in a loop and terminated. The alternative
+ * is to just pass a static large number for this value, regardless of the target
+ * string, which causes overall execution time to go way up.
+ */
+static int calculate_max_instructions(char *s)
+{
+    int ret = 0;
+
+    while(*s) {
+        ret += *(s++);
+    }
+
+    ret = (int)((float)ret * MAX_INSTRUCTIONS_MULTIPLIER);
+    return MIN_VAL(ret, MAX_INSTRUCTIONS_LIMIT);
+}
+
+/**
  * Run BF program through interpreter and assess fitness level
  *
  * @param organism  organism to assess. 'program' and 'program_len' must be set.
@@ -107,7 +131,9 @@ static uint32_t assess(void *data)
         return unfit(org);
     }
 
-    int len = bf_interpret(org->program, org->output, ORG_MAX_OUTPUT);
+    int len = bf_interpret(org->program, org->output, ORG_MAX_OUTPUT,
+            max_instructions);
+
     if (len < 0) {
         return unfit(org);
     }
@@ -361,8 +387,8 @@ static int on_evolve(void *data, uint32_t fitness, uint32_t generation)
 {
     organism_t *org = (organism_t *)data;
 
-    bfi_log("generation=%u, fitness=%u, output=%s", generation, fitness,
-            org->output);
+    bfi_log("generation=%u, fitness=%u, size=%u, output=%s", generation,
+            fitness, org->program_len, org->output);
     return 0;
 }
 
@@ -395,6 +421,14 @@ int population_evolve(char *target, int num_items, int max_len, float crossover,
     target_output = target;
     target_output_len = strlen(target);
 
+    max_instructions = calculate_max_instructions(target);
+    if (max_instructions <= 0) {
+        bfi_log("unable to calculate max. required instructions for target "
+                "string '%s'", target);
+        return -1;
+    }
+
+    printf("%d\n", max_instructions);
     if (verbose) {
         cfg.on_evolve = on_evolve;
     }

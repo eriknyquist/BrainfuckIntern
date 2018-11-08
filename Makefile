@@ -22,17 +22,27 @@ PROGNAME := bfintern
 BUILD_OUTPUT := $(OUTPUT_DIR)/$(PROGNAME)
 
 INCLUDES := $(addprefix -I, $(SRC_DIRS))
+
+PROFILE_ENABLE_FLAGS := -pg -no-pie
+
 FLAGS := -Wall -O3
 DEBUG_FLAGS := -Wall -O0 -g3
+PROFILE_FLAGS := $(DEBUG_FLAGS) $(PROFILE_ENABLE_FLAGS)
+
 CFLAGS := $(FLAGS) $(INCLUDES)
 .PHONY: clean
 
 all: $(BUILD_OUTPUT)
+
 debug: CFLAGS := $(DEBUG_FLAGS) $(INCLUDES)
 debug: $(BUILD_OUTPUT)
 
+profile: CFLAGS := $(PROFILE_FLAGS) $(INCLUDES)
+profile: LFLAGS := $(PROFILE_ENABLE_FLAGS)
+profile: $(BUILD_OUTPUT)
+
 $(BUILD_OUTPUT): output_dir $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $@
+	$(CC) $(LFLAGS) $(OBJ_FILES) -o $@
 
 $(OUTPUT_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
