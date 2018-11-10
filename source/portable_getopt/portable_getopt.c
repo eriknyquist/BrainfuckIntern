@@ -62,7 +62,7 @@ static void shift_nonopt_args(int argc, char *argv[], const char *optstring)
                 continue;
             }
 
-            char *const temp = argv[i];
+            char *temp = argv[i];
 
             for (int j = i + 1; j < argc; j++) {
                 argv[j - 1] = argv[j];
@@ -76,7 +76,7 @@ static void shift_nonopt_args(int argc, char *argv[], const char *optstring)
 int portable_getopt(int argc, char *argv[], const char *optstring)
 {
     static int optpos = 1;
-    const char *arg;
+    char *arg;
     (void)argc;
 
     /* Reset? */
@@ -95,7 +95,7 @@ int portable_getopt(int argc, char *argv[], const char *optstring)
     } else if (!arg || arg[0] != '-' || !isalnum(arg[1])) {
         return -1;
     } else {
-        const char *opt = strchr(optstring, arg[optpos]);
+        char *opt = strchr(optstring, arg[optpos]);
         optopt = arg[optpos];
         if (!opt) {
             if (opterr && *optstring != ':')
