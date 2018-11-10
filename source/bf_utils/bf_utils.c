@@ -89,9 +89,30 @@ int bf_rand_syms(char *output, int min_size, int max_size)
 }
 
 /**
+ * Count the number of characters following the first character that are the
+ * same as the first character
+ *
+ * @param s  pointer to string, positioned at the character to check for
+ *           duplicates after
+ * @return  number of duplicates after first character
+ */
+int count_dupes_ahead(char *s)
+{
+    int i;
+
+    for (i = 1; s[i]; i++) {
+        if (s[i] != *s) {
+            break;
+        }
+    }
+
+    return i - 1;
+}
+
+/**
  * @see bf_utils.h
  */
-int bf_interpret(const char *input, char *output, int max_output,
+int bf_interpret(char *input, char *output, int max_output,
     int max_instructions)
 {
     unsigned char tape[TAPE_SIZE];
@@ -110,6 +131,8 @@ int bf_interpret(const char *input, char *output, int max_output,
     /* Index to current position in output buffer */
     int out = 0;
 
+    int dupes;
+
     memset(tape, 0, TAPE_SIZE);
     pos = 0;
 
@@ -122,22 +145,32 @@ int bf_interpret(const char *input, char *output, int max_output,
             if (!index_valid(p))
                 return -1;
 
-            tape[p] = (tape[p] + 1) % 256;
+            dupes = count_dupes_ahead(input + i);
+            tape[p] = (tape[p] + dupes + 1) % 256;
+            i += dupes;
 
         } else if (input[i] == syms[BF_DEC]) {
             if (!index_valid(p))
                 return -1;
 
-            if (!tape[p])
-                tape[p] = 255;
-            else
-                tape[p] -= 1;
+            dupes = count_dupes_ahead(input + i);
+            if (tape[p] < (dupes + 1)) {
+                tape[p] = 255 - ((dupes + 1) % 256);
+            } else {
+                tape[p] -= (dupes + 1);
+            }
+
+            i += dupes;
 
         } else if (input[i] == syms[BF_LSH]) {
-                p -= 1;
+                dupes = count_dupes_ahead(input + i);
+                p -= (dupes + 1);
+                i += dupes;
 
         } else if (input[i] == syms[BF_RSH]) {
-                p += 1;
+                dupes = count_dupes_ahead(input + i);
+                p += (dupes + 1);
+                i += dupes;
 
         } else if (input[i] == syms[BF_OUT]) {
             if (!index_valid(p))

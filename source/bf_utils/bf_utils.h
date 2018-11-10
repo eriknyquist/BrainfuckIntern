@@ -19,7 +19,7 @@
  * @return -1 if interpretation failed, or max. number of output characters
  *         exceeded, or max. number of instructions exceeded
  */
-int bf_interpret(const char *input, char *output, int max_output,
+int bf_interpret(char *input, char *output, int max_output,
     int max_instructions);
 
 /**
