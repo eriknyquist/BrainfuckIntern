@@ -1,12 +1,5 @@
 OUTPUT_DIR := build
 SRC_ROOT := source
-SRC_DIRS := \
-	$(SRC_ROOT) \
-	$(SRC_ROOT)/evolution \
-	$(SRC_ROOT)/population \
-	$(SRC_ROOT)/bf_utils \
-	$(SRC_ROOT)/portable_getopt \
-	$(SRC_ROOT)/common
 
 X64_CC := x86_64-w64-mingw32-gcc
 X86_CC := i686-w64-mingw32-gcc
@@ -15,18 +8,19 @@ WIN_BUILD := windows_build
 X64_DIR := $(WIN_BUILD)/x86_64
 X86_DIR := $(WIN_BUILD)/i686
 
-VPATH := $(SRC_DIRS)
-SRC_FILES := $(foreach DIR,$(SRC_DIRS),$(wildcard $(DIR)/*.c))
+VPATH := $(SRC_ROOT)
+SRC_FILES := $(wildcard $(SRC_ROOT)/*.c)
 OBJ_FILES := $(patsubst %.c,%.o,$(addprefix $(OUTPUT_DIR)/,$(notdir $(SRC_FILES))))
 PROGNAME := bfintern
 BUILD_OUTPUT := $(OUTPUT_DIR)/$(PROGNAME)
 
-INCLUDES := $(addprefix -I, $(SRC_DIRS))
+INCLUDES := -I$(SRC_ROOT)
 
 PROFILE_ENABLE_FLAGS := -pg -no-pie
 
-FLAGS := -Wall -O3
-DEBUG_FLAGS := -Wall -O0 -g3
+FLAGS := -Wall -pedantic -O2
+DEBUG_FLAGS := -Wall -pedantic -O0 -g3 -fsanitize=address
+LFLAGS := -fsanitize=address
 PROFILE_FLAGS := $(DEBUG_FLAGS) $(PROFILE_ENABLE_FLAGS)
 
 CFLAGS := $(FLAGS) $(INCLUDES)
