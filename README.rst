@@ -26,7 +26,8 @@ only the following tools at its disposal;
   character would be a better fitness level still, and so on until the best fitness
   level, which would be a brainfuck program that prints exactly the target string.
 
-*Brainfuck Intern hard at work*
+*Brainfuck Intern hard at work producing the "hello world" program that is shown
+at the end of this README*
 
 .. image:: images/bfintern.gif
 
@@ -48,88 +49,88 @@ with no arguments to see usage information:
 
     $> bfintern
 
-	Brainfuck Intern (version 2.0)
+    Brainfuck Intern (version 2.0)
 
-	Erik Nyquist <eknyquist@gmail.com>)
+    Erik Nyquist <eknyquist@gmail.com>)
 
-	Uses a genetic algorithm to mutate strings of random Brainfuck characters
-	until they match a set of user-provided test cases.
+    Uses a genetic algorithm to mutate strings of random Brainfuck characters
+    until they match a set of user-provided test cases.
 
-	Press Ctrl-C at any time to display the current best Brainfuck program
-	and terminate.
+    Press Ctrl-C at any time to display the current best Brainfuck program
+    and terminate.
 
-	Usage: ./build/bfintern [OPTIONS] <TESTCASE> [<TESTCASE>, ...]
+    Usage: ./build/bfintern [OPTIONS] <TESTCASE> [<TESTCASE>, ...]
 
-	POSITIONAL ARGUMENTS:
+    POSITIONAL ARGUMENTS:
 
-	One or more test cases, where each test case consists of two ASCII
-	strings separated by a colon ':'. The first string (left side of the
-	colon) will be passed as input to the Brainfuck program under test,
-	and the second string (right side of the colon) is the output that
-	must be produced by the Brainfuck program in order for the test case
-	to pass.
+    One or more test cases, where each test case consists of two ASCII
+    strings separated by a colon ':'. The first string (left side of the
+    colon) will be passed as input to the Brainfuck program under test,
+    and the second string (right side of the colon) is the output that
+    must be produced by the Brainfuck program in order for the test case
+    to pass.
 
-	A test case may also contain a single ASCII string with no colon. In
-	this case, the provided string will be considered the expected output,
-	and no input will passed to the Brainfuck program under test.
+    A test case may also contain a single ASCII string with no colon. In
+    this case, the provided string will be considered the expected output,
+    and no input will passed to the Brainfuck program under test.
 
-	OPTIONS:
+    OPTIONS:
 
-	-e <elitism>       Defines how many of the best Brainfuck programs are
-					   selected from the population for each cycle of the
-					   evolution process, for breeding & mutation (0.0 to
-					   1.0, e.g. 0.25 means the top 25% will be selected).
-					   Default is 0.33.
+    -e <elitism>       Defines how many of the best Brainfuck programs are
+                       selected from the population for each cycle of the
+                       evolution process, for breeding & mutation (0.0 to
+                       1.0, e.g. 0.25 means the top 25% will be selected).
+                       Default is 0.33.
 
-	-c <crossover>     Defines how many of the selected 'elite' Brainfuck
-					   programs will be 'bred' (randomly mixed/combined)
-					   with other randomly selected programs (0.0 to 1.0,
-					   e.g. 0.75 means 75% of elite programs will be bred).
-					   Default is 0.33.
+    -c <crossover>     Defines how many of the selected 'elite' Brainfuck
+                       programs will be 'bred' (randomly mixed/combined)
+                       with other randomly selected programs (0.0 to 1.0,
+                       e.g. 0.75 means 75% of elite programs will be bred).
+                       Default is 0.33.
 
-	-m <mutation>      Defines how many of the selected 'elite' Brainfuck
-					   programs will be randomly mutated (0.0 to 1.0, e.g.
-					   0.44 means 44% of elite programs will be mutated.
-					   Default is 0.33.
+    -m <mutation>      Defines how many of the selected 'elite' Brainfuck
+                       programs will be randomly mutated (0.0 to 1.0, e.g.
+                       0.44 means 44% of elite programs will be mutated.
+                       Default is 0.33.
 
-	-s <size>          Defines the number of Brainfuck programs in the
-					   population (integer). Default is 1024.
+    -s <size>          Defines the number of Brainfuck programs in the
+                       population (integer). Default is 1024.
 
-	-l <size>          Defines the maximum size in bytes of each
-					   generated Brainfuck program in the population.
-					   Default is 4096.
+    -l <size>          Defines the maximum size in bytes of each
+                       generated Brainfuck program in the population.
+                       Default is 4096.
 
-	-o <num>           Once evolution has produced a correct Brainfuck
-					   program (passes all test cases), continue evolving
-					   for an additional <num> generations to attempt to
-					   shorten the Brainfuck program by removing unnecessary
-					   characters (-1 to optimise infinitely). Default is 1000.
+    -o <num>           Once evolution has produced a correct Brainfuck
+                       program (passes all test cases), continue evolving
+                       for an additional <num> generations to attempt to
+                       shorten the Brainfuck program by removing unnecessary
+                       characters (-1 to optimise infinitely). Default is 1000.
 
-	-r <seed>          Fixed seed value to seed random number generation.
-					   The current time (seconds) is used by default.
+    -r <seed>          Fixed seed value to seed random number generation.
+                       The current time (seconds) is used by default.
 
-	-q                 Do not show evolution progress by printing status and
-					   fittest BF program at each improved generation (default
-					   behaviour). Instead, only print the fittest Brainfuck
-					   program on termination (Ctrl-C).
+    -q                 Do not show evolution progress by printing status and
+                       fittest BF program at each improved generation (default
+                       behaviour). Instead, only print the fittest Brainfuck
+                       program on termination (Ctrl-C).
 
-	-h                 Show this text and exit.
+    -h                 Show this text and exit.
 
-	EXAMPLES:
+    EXAMPLES:
 
-	Produce a program that prints "Hello, world!":
+    Produce a program that prints "Hello, world!":
 
-		./build/bfintern "Hello, world!"
+        ./build/bfintern "Hello, world!"
 
-	Produce a program that prints "Hello, world!", with custom seed,
-	mutation and elitism values provided:
+    Produce a program that prints "Hello, world!", with custom seed,
+    mutation and elitism values provided:
 
-		./build/bfintern -r 123456 -m 0.75 -e 0.1 "Hello, world!"
+        ./build/bfintern -r 123456 -m 0.75 -e 0.1 "Hello, world!"
 
-	Produce a program that prints "true" when input is "1", and prints
-	"false" when the input is "0":
+    Produce a program that prints "true" when input is "1", and prints
+    "false" when the input is "0":
 
-		./build/bfintern "0:false" "1:true"
+        ./build/bfintern "0:false" "1:true"
 
 Hello, world! by brainfuck intern
 =================================
@@ -139,10 +140,10 @@ of smashing random bits of garbage together. This program prints "Hello, world!"
 
 ::
 
-	->+->++++++[+++++++++++++++++++++++++++++++++++++++++++>+++++++++++++++++++
-	+++[+++++++++++<][]>++++-+++++++++.+++++++++++++++++++++++++++++.-++++++++.
-	.+++.+++++++>+++++++++++-+.---------+----.-<+[.--+---[----.++-+-++.------.-
-	----[---.-+<]]>+-++--+>--++++.-+>]+->]
+    ->+->++++++[+++++++++++++++++++++++++++++++++++++++++++>+++++++++++++++++++
+    +++[+++++++++++<][]>++++-+++++++++.+++++++++++++++++++++++++++++.-++++++++.
+    .+++.+++++++>+++++++++++-+.---------+----.-<+[.--+---[----.++-+-++.------.-
+    ----[---.-+<]]>+-++--+>--++++.-+>]+->]
 
 Final note from Xzibit
 ======================
