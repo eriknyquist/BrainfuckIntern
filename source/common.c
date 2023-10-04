@@ -73,13 +73,19 @@ void hrsize (size_t size, char *buf, unsigned int bufsize)
 
     mult = EXABYTES;
 
-    for (i = 0; i < NUMNAMES; ++i, mult /= 1024u) {
+    for (i = 0; i < NUMNAMES; ++i, mult /= 1024u)
+    {
         if (size < mult)
+        {
             continue;
+        }
 
-        if (mult && (size % mult) == 0u) {
+        if (mult && (size % mult) == 0u)
+        {
             snprintf(buf, bufsize, "%"PRIu64" %s", size / mult, names[i]);
-        } else {
+        }
+        else
+        {
             snprintf(buf, bufsize, "%.2f %s", (float) size / mult, names[i]);
         }
 
@@ -105,13 +111,19 @@ void hrcount (unsigned int size, char *buf, unsigned int bufsize)
 
     mult = EXACOUNT;
 
-    for (i = 0; i < NUMNAMES; ++i, mult /= 1000u) {
+    for (i = 0; i < NUMNAMES; ++i, mult /= 1000u)
+    {
         if (size < mult)
+        {
             continue;
+        }
 
-        if (mult && (size % mult) == 0u) {
+        if (mult && (size % mult) == 0u)
+        {
             snprintf(buf, bufsize, "%"PRIu64"%c", size / mult, names[i]);
-        } else {
+        }
+        else
+        {
             snprintf(buf, bufsize, "%.1f%c", (float) size / mult, names[i]);
         }
 
@@ -146,7 +158,8 @@ static void timestamp(char *buf, int bufsize)
 #endif /* WINDOWS */
 
     /* Null-terminate string if snprintf didn't do it */
-    if (ret > (bufsize - 1)) {
+    if (ret > (bufsize - 1))
+    {
         buf[bufsize - 1] = 0;
     }
 }

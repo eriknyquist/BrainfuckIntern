@@ -122,13 +122,15 @@ static int _parse_float(char optchar, float *dest)
     char *endptr;
 
     float val = (float)strtod(optarg, &endptr);
-    if (endptr != (optarg + strlen(optarg))) {
+    if (endptr != (optarg + strlen(optarg)))
+    {
         bfi_log("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
             optchar);
         return -1;
     }
 
-    if ((val < 0.0) || (val > 1.0)) {
+    if ((val < 0.0) || (val > 1.0))
+    {
         bfi_log("Please provide a value between 0.0 and 1.0 for -%c option\n\n",
             optchar);
         return -1;
@@ -252,19 +254,22 @@ static int _parse_args(evolution_config_t *cfg, int argc, char *argv[])
                 return -1;
 
             case 'e':
-                if (_parse_float('e', &cfg->elitism) < 0) {
+                if (_parse_float('e', &cfg->elitism) < 0)
+                {
                     return -1;
                 }
                 break;
 
             case 'c':
-                if (_parse_float('c', &cfg->crossover) < 0) {
+                if (_parse_float('c', &cfg->crossover) < 0)
+                {
                     return -1;
                 }
                 break;
 
             case 'm':
-                if (_parse_float('m', &cfg->mutation) < 0) {
+                if (_parse_float('m', &cfg->mutation) < 0)
+                {
                     return -1;
                 }
                 break;
@@ -353,7 +358,8 @@ static int _parse_args(evolution_config_t *cfg, int argc, char *argv[])
         }
     }
 
-    if (argv[optind] == NULL) {
+    if (argv[optind] == NULL)
+    {
         help_text(argv[0]);
         return -1;
     }
@@ -379,7 +385,9 @@ int main(int argc, char *argv[])
                                  DEFAULT_POPSIZE, DEFAULT_MAX_LEN, DEFAULT_OPTGENS, false};
 
     if (_parse_args(&config, argc, argv) < 0)
+    {
         return -1;
+    }
 
     bfi_log("successfully loaded %u test case(s)", _num_testcases);
 

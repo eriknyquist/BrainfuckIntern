@@ -307,10 +307,14 @@ static int _breed(bf_program_t *p1, bf_program_t *p2, bf_program_t *c1,
 static int _insert_substring(bf_program_t *org, char *sub, int size, int i)
 {
     if (i >= org->program_len)
+    {
         return -1;
+    }
 
     if ((org->program_len + size) > _config.max_program_size)
+    {
         return -1;
+    }
 
     /* Move up chunk after substring location */
     memmove(org->text + i + size, org->text + i, org->program_len - i);
@@ -391,8 +395,10 @@ static int _mutate(bf_program_t *org)
             _snip_slice(org, i - 1, 1);
 
             if (_insert_substring(org, &c, 1, j - 1) < 0)
+            {
                 // Not enough space to insert
                 return 0;
+            }
 
         break;
 
@@ -402,8 +408,10 @@ static int _mutate(bf_program_t *org)
             c = org->text[i - 1];
 
             if (_insert_substring(org, &c, 1, j - 1) < 0)
+            {
                 // Not enough space to insert
                 return 0;
+            }
 
         break;
 
@@ -412,8 +420,10 @@ static int _mutate(bf_program_t *org)
             c = bf_rand_sym();
 
             if (_insert_substring(org, &c, 1, i - 1) < 0)
+            {
                 // Not enough space to insert
                 return 0;
+            }
 
         break;
 
@@ -426,8 +436,10 @@ static int _mutate(bf_program_t *org)
                 size = bf_rand_syms(buf, 1, stringlen);
 
                 if (_insert_substring(org, buf, size, i - 1) < 0)
+                {
                     // Not enough space to insert
                     return 0;
+                }
             }
         }
         break;
