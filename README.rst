@@ -132,7 +132,7 @@ with no arguments to see usage information:
 
         ./build/bfintern "0:false" "1:true"
 
-Hello, world! by brainfuck intern
+Hello, world! by Brainfuck Intern
 =================================
 
 Brainfuck intern created this beautiful Brainfuck program after a minute or so
@@ -145,7 +145,7 @@ of smashing random bits of garbage together. This program prints "Hello, world!"
     .+++.+++++++>+++++++++++-+.---------+----.-<+[.--+---[----.++-+-++.------.-
     ----[---.-+<]]>+-++--+>--++++.-+>]+->]
 
-Final note from Xzibit
-======================
+Personal testimony from Xzibit
+==============================
 
 .. image:: images/x.jpg
