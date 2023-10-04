@@ -20,7 +20,6 @@ PROFILE_ENABLE_FLAGS := -pg -no-pie
 
 FLAGS := -Wall -pedantic -O2
 DEBUG_FLAGS := -Wall -pedantic -O0 -g3 -fsanitize=address
-LFLAGS := -fsanitize=address
 PROFILE_FLAGS := $(DEBUG_FLAGS) $(PROFILE_ENABLE_FLAGS)
 
 CFLAGS := $(FLAGS) $(INCLUDES)
@@ -29,6 +28,7 @@ CFLAGS := $(FLAGS) $(INCLUDES)
 all: $(BUILD_OUTPUT)
 
 debug: CFLAGS := $(DEBUG_FLAGS) $(INCLUDES)
+debug: LFLAGS := -fsanitize=address
 debug: $(BUILD_OUTPUT)
 
 profile: CFLAGS := $(PROFILE_FLAGS) $(INCLUDES)
@@ -46,11 +46,11 @@ output_dir:
 
 windows_x64: CC := $(X64_CC)
 windows_x64: $(BUILD_OUTPUT)
-	cp $(BUILD_OUTPUT) $(X64_DIR)/$(PROGNAME).exe
+	cp $(BUILD_OUTPUT).exe $(X64_DIR)/$(PROGNAME).exe
 
 windows_x86: CC := $(X86_CC)
 windows_x86: $(BUILD_OUTPUT)
-	cp $(BUILD_OUTPUT) $(X86_DIR)/$(PROGNAME).exe
+	cp $(BUILD_OUTPUT).exe $(X86_DIR)/$(PROGNAME).exe
 
 clean:
 	[ -d $(OUTPUT_DIR) ] && rm -rf $(OUTPUT_DIR)
