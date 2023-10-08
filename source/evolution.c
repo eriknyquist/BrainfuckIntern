@@ -29,7 +29,7 @@
 #define TOURNAMENT_SIZE  (6)
 
 // If a BF program executes more than this many instructions, it will be considered timed out
-#define MAX_INSTRUCTIONS_EXEC (5000)
+#define MAX_INSTRUCTIONS_EXEC (10000)
 
 // Size of a single BF program in the population
 #define BF_PROG_SIZE_BYTES (sizeof(bf_program_t) + _config.max_program_size + 1u)
@@ -584,6 +584,12 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
         return -1;
     }
 
+    if (2u > config->max_program_size)
+    {
+        bfi_log("Max. BF program size must be at least 2");
+        return -1;
+    }
+
 #if WINDOWS
     if (!SetConsoleCtrlHandler(win_sighandler, TRUE)) {
 #else
@@ -597,6 +603,9 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     _num_testcases = num_testcases;
     _elite_border = (unsigned int) (((float) config->population_size) * config->elitism);
     _config = *config;
+
+    // Account for null terminator
+    _config.max_program_size -= 1u;
 
     size_t alloc_size = ((config->population_size * BF_PROG_SIZE_BYTES) * 2u) + BF_PROG_SIZE_BYTES;
 

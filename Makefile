@@ -19,7 +19,7 @@ INCLUDES := -I$(SRC_ROOT)
 PROFILE_ENABLE_FLAGS := -pg -no-pie
 
 FLAGS := -Wall -pedantic -O2
-DEBUG_FLAGS := -Wall -pedantic -O0 -g3 -fsanitize=address
+DEBUG_FLAGS := -Wall -pedantic -O0 -g3 -fsanitize=address,undefined
 PROFILE_FLAGS := $(DEBUG_FLAGS) $(PROFILE_ENABLE_FLAGS)
 
 CFLAGS := $(FLAGS) $(INCLUDES)
@@ -28,7 +28,7 @@ CFLAGS := $(FLAGS) $(INCLUDES)
 all: $(BUILD_OUTPUT)
 
 debug: CFLAGS := $(DEBUG_FLAGS) $(INCLUDES)
-debug: LFLAGS := -fsanitize=address
+debug: LFLAGS := -fsanitize=address,undefined
 debug: $(BUILD_OUTPUT)
 
 profile: CFLAGS := $(PROFILE_FLAGS) $(INCLUDES)
