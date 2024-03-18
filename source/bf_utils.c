@@ -54,7 +54,7 @@ static int stack_push(int val)
  */
 char bf_rand_sym(void)
 {
-    return syms[rand() % BF_NUM_SYMS];
+    return syms[pcg32_rand() % BF_NUM_SYMS];
 }
 
 /**

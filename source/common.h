@@ -9,6 +9,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdint.h>
+
+
 #if defined __linux__
 #define WINDOWS 0
 #elif defined _WIN32
@@ -20,6 +23,11 @@
 #define MIN_VAL(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX_VAL(x, y) (((x) > (y)) ? (x) : (y))
 
+
+void pcg32_seed(unsigned int seedval);
+
+uint32_t pcg32_rand(void);
+
 /**
  * Get  random number in specific range
  *
@@ -27,7 +35,7 @@
  * @param   high  high end of range
  * @return  random number in specified range
  */
-int randrange(int low, int high);
+uint32_t randrange(uint32_t low, uint32_t high);
 
 /**
  * Get  random number in specific range, except for one specific number
@@ -37,7 +45,7 @@ int randrange(int low, int high);
  * @param   except  high end of range
  * @return  random number in specified range
  */
-int randrange_except(int low, int high, int except);
+uint32_t randrange_except(uint32_t low, uint32_t high, uint32_t except);
 
 /**
  * Get random number between 0.0 - 1.0, with 4 digits of precision

@@ -11,7 +11,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <inttypes.h>
+#include <limits.h>
 
+#include "pcg_variants.h"
 #include "common.h"
 
 #if WINDOWS
@@ -29,20 +31,34 @@
 #define EXACOUNT                (1000ULL * 1000ULL * 1000ULL * 1000ULL * \
                                 1000ULL * 1000ULL)
 
-/**
- * @see common.h
- */
-int randrange(int low, int high)
+
+static pcg32_random_t _pcg_rng;
+
+
+void pcg32_seed(unsigned int seedval)
 {
-    return (rand() % (high + 1 - low)) + low;
+    pcg32_srandom_r(&_pcg_rng, (uint64_t) seedval, 0u);
+}
+
+uint32_t pcg32_rand(void)
+{
+    return pcg32_random_r(&_pcg_rng);
 }
 
 /**
  * @see common.h
  */
-int randrange_except(int low, int high, int except)
+uint32_t randrange(uint32_t low, uint32_t high)
 {
-    int ret = randrange(low, high);
+    return (pcg32_rand() % (high + 1u - low)) + low;
+}
+
+/**
+ * @see common.h
+ */
+uint32_t randrange_except(uint32_t low, uint32_t high, uint32_t except)
+{
+    uint32_t ret = randrange(low, high);
 
     while (ret == except)
         ret = randrange(low, high);
@@ -55,7 +71,7 @@ int randrange_except(int low, int high, int except)
  */
 float randfloat(void)
 {
-    return ((float)randrange(0, 10000)) / 10000.0f; 
+    return ((float)randrange(0u, 10000u)) / 10000.0f; 
 }
 
 /**

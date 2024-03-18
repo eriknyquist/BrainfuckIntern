@@ -16,7 +16,7 @@
 #include "evolution.h"
 #include "common.h"
 
-#define VERSION                 ("2.0")
+#define VERSION                 ("2.1")
 
 #define DEFAULT_CROSSOVER       (0.33f)
 #define DEFAULT_ELITISM         (0.33f)
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
     bfi_log("successfully loaded %u test case(s)", _num_testcases);
 
     unsigned int seedval = (_seed_provided) ? _seed : (unsigned int) time(&t);
-    srand(seedval);
+    pcg32_seed(seedval);
     bfi_log("random seed: %u", seedval);
 
     // allocate space for output

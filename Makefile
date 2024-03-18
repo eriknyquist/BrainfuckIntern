@@ -14,25 +14,25 @@ OBJ_FILES := $(patsubst %.c,%.o,$(addprefix $(OUTPUT_DIR)/,$(notdir $(SRC_FILES)
 PROGNAME := bfintern
 BUILD_OUTPUT := $(OUTPUT_DIR)/$(PROGNAME)
 
-INCLUDES := -I$(SRC_ROOT)
+INCLUDES := -I$(SRC_ROOT) -I$(SRC_ROOT)/pcg32
 
 PROFILE_ENABLE_FLAGS := -pg -no-pie
 
-FLAGS := -Wall -pedantic -O2
-DEBUG_FLAGS := -Wall -pedantic -O0 -g3 -fsanitize=address,undefined
-PROFILE_FLAGS := $(DEBUG_FLAGS) $(PROFILE_ENABLE_FLAGS)
+DEBUG_FLAGS := -O0 -g3 -fsanitize=address,undefined
+PROFILE_FLAGS := -O0 -g3 $(PROFILE_ENABLE_FLAGS)
 
-CFLAGS := $(FLAGS) $(INCLUDES)
+CFLAGS := $(INCLUDES) -Wall -pedantic
 .PHONY: clean
 
+all: CFLAGS += -O3
 all: $(BUILD_OUTPUT)
 
-debug: CFLAGS := $(DEBUG_FLAGS) $(INCLUDES)
-debug: LFLAGS := -fsanitize=address,undefined
+debug: CFLAGS += $(INCLUDES) $(DEBUG_FLAGS)
+debug: LFLAGS += -fsanitize=address,undefined
 debug: $(BUILD_OUTPUT)
 
-profile: CFLAGS := $(PROFILE_FLAGS) $(INCLUDES)
-profile: LFLAGS := $(PROFILE_ENABLE_FLAGS)
+profile: CFLAGS += $(PROFILE_FLAGS)
+profile: LFLAGS += $(PROFILE_ENABLE_FLAGS)
 profile: $(BUILD_OUTPUT)
 
 $(BUILD_OUTPUT): output_dir $(OBJ_FILES)
@@ -44,10 +44,12 @@ $(OUTPUT_DIR)/%.o: %.c
 output_dir:
 	[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
 
+windows_x64: CFLAGS += -O3
 windows_x64: CC := $(X64_CC)
 windows_x64: $(BUILD_OUTPUT)
 	cp $(BUILD_OUTPUT).exe $(X64_DIR)/$(PROGNAME).exe
 
+windows_x86: CFLAGS += -O3
 windows_x86: CC := $(X86_CC)
 windows_x86: $(BUILD_OUTPUT)
 	cp $(BUILD_OUTPUT).exe $(X86_DIR)/$(PROGNAME).exe

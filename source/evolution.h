@@ -12,6 +12,7 @@
 #define MAX_TESTCASE_INPUT_SIZE   (128u)
 #define MAX_TESTCASE_OUTPUT_SIZE  (128u)
 
+#include <stdint.h>
 #include <stdbool.h>
 
 
@@ -64,7 +65,7 @@ typedef struct
     float mutation;
 
     /* Number of BF programs in the 'population' */
-    unsigned int population_size;
+    uint32_t population_size;
 
     /* Maximum size (in bytes) of generated BF programs */
     size_t max_program_size;

@@ -91,9 +91,9 @@ typedef enum {
 
 
 static volatile bool _stopped = false;
-static unsigned int _elite_border = 0u;
-static unsigned int _active_pop_index = 0u;
-static unsigned int _generation = 0u;
+static uint32_t _elite_border = 0u;
+static uint32_t _active_pop_index = 0u;
+static uint32_t _generation = 0u;
 
 static evolution_testcase_t *_testcases = NULL;
 static unsigned int _num_testcases = 0u;
@@ -216,16 +216,16 @@ static bf_program_t *_tournament(void)
 {
     bf_program_t *curr;
     bf_program_t *best;
-    int org;
+    uint32_t org;
 
-    org = randrange(0, _config.population_size - 1);
+    org = randrange(0u, _config.population_size - 1u);
     best = curr = ACTIVE_POP(org);
 
     // Run all but the last tournament match
-    int tournament_size = MINVAL(TOURNAMENT_SIZE, _config.population_size);
-    for (int i = 1; i <= tournament_size; i++)
+    uint32_t tournament_size = MINVAL(TOURNAMENT_SIZE, _config.population_size);
+    for (uint32_t i = 1u; i <= tournament_size; i++)
     {
-        org = randrange(0, _config.population_size - 1);
+        org = randrange(0u, _config.population_size - 1u);
         curr = ACTIVE_POP(org);
 
         if (curr->fitness < best->fitness)
@@ -242,14 +242,14 @@ static int _breed(bf_program_t *p1, bf_program_t *p2, bf_program_t *c1,
                   bf_program_t *c2)
 {
     /* Split each parent randomly between the 1st and 3rd quarter */
-    int p1i = randrange(p1->program_len / 4, (p1->program_len / 4) * 3);
-    int p2i = randrange(p2->program_len / 4, (p2->program_len / 4) * 3);
+    uint32_t p1i = randrange(p1->program_len / 4u, (p1->program_len / 4u) * 3u);
+    uint32_t p2i = randrange(p2->program_len / 4u, (p2->program_len / 4u) * 3u);
 
     if (((p1i + p2i) >= _config.max_program_size) ||
         (((_config.max_program_size - p1i) + (_config.max_program_size)) >= _config.max_program_size))
     {
-        p1i = p1->program_len / 2;
-        p2i = p2->program_len / 2;
+        p1i = p1->program_len / 2u;
+        p2i = p2->program_len / 2u;
     }
     /* Copy 1st half of p1 to 1st half of c1 */
     memcpy(c1->text, p1->text, p1i);
@@ -368,11 +368,11 @@ static int _mutate(bf_program_t *org)
 {
     char buf[MUTATE_STR_SIZE];
     int size;
-    int len;
+    uint32_t randlen;
 
-    int j;
-    int i = randrange(1, org->program_len);
-    int m = randrange(0, NUM_MUTATIONS - 1);
+    uint32_t j;
+    uint32_t i = randrange(1u, org->program_len);
+    uint32_t m = randrange(0u, NUM_MUTATIONS - 1u);
     char c;
 
     switch(m)
@@ -380,7 +380,7 @@ static int _mutate(bf_program_t *org)
         case MUTATE_SWAP:
         {
             /* Pick two random characters and swap their positions */
-            int j = randrange(1, org->program_len);
+            uint32_t j = randrange(1, org->program_len);
             char ci = org->text[i - 1];
             org->text[i - 1] = org->text[j - 1];
             org->text[j - 1] = ci;
@@ -389,7 +389,7 @@ static int _mutate(bf_program_t *org)
 
         /* Move a random character to a new location */
         case MUTATE_MOVE:
-            j = randrange_except(1, org->program_len, i);
+            j = randrange_except(1u, org->program_len, i);
             c = org->text[i - 1];
 
             _snip_slice(org, i - 1, 1);
@@ -452,9 +452,9 @@ static int _mutate(bf_program_t *org)
 
         /* Randomly remove 1 or more characters */
         case MUTATE_REMOVE_BLOCK:
-            len = randrange(1, org->program_len / 2);
-            i = randrange(0, org->program_len - len);
-            _snip_slice(org, i, len);
+            randlen = randrange(1u, org->program_len / 2u);
+            i = randrange(0u, org->program_len - randlen);
+            _snip_slice(org, i, randlen);
 
         break;
 
@@ -470,8 +470,8 @@ static int _mutate(bf_program_t *org)
 // Evolve the active population until the next population is full
 static int _evolve(void)
 {
-    unsigned int nextpos = 0;
-    unsigned int activepos = 0u;
+    uint32_t nextpos = 0;
+    uint32_t activepos = 0u;
 
     // Always copy over the fittest program
     //memcpy(NEXT_POP(nextpos++), ACTIVE_POP(0), BF_PROG_SIZE_BYTES);
