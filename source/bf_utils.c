@@ -17,17 +17,7 @@
 
 #define index_valid(i) (i >= 0 && i < TAPE_SIZE)
 
-typedef enum {
-    BF_INC = 0,
-    BF_DEC = 1,
-    BF_LSH = 2,
-    BF_RSH = 3,
-    BF_OUT = 4,
-    BF_OPEN = 5,
-    BF_CLOSE = 6,
-    BF_IN = 7,
-    BF_NUM_SYMS = 8
-} bf_sym_e;
+#define BF_NUM_SYMS (8)
 
 static int stack[STACK_SIZE];
 
@@ -36,6 +26,7 @@ static const char *syms = "+-<>.[],";
 
 #define stack_pop() ((pos == 0) ? -1 : stack[--pos])
 #define stack_peek() ((pos == 0) ? -1 : stack[pos - 1])
+
 
 static int stack_push(int val)
 {
@@ -148,155 +139,163 @@ int bf_interpret(char *prog, char *input, size_t input_len, char *output, size_t
             return -1;
         }
 
-        if (prog[i] == syms[BF_INC])
+        switch (prog[i])
         {
-            if (!index_valid(p))
+            case '+':
             {
-                return -1;
-            }
-
-            dupes = count_dupes_ahead(prog + i);
-            tape[p] = (tape[p] + dupes + 1) % 256;
-            i += dupes;
-
-        }
-        else if (prog[i] == syms[BF_DEC])
-        {
-            if (!index_valid(p))
-            {
-                return -1;
-            }
-
-            dupes = count_dupes_ahead(prog + i);
-            if (tape[p] < (dupes + 1))
-            {
-                tape[p] = 255 - ((dupes + 1) % 256);
-            }
-            else
-            {
-                tape[p] -= (dupes + 1);
-            }
-
-            i += dupes;
-
-        }
-        else if (prog[i] == syms[BF_LSH])
-        {
-            dupes = count_dupes_ahead(prog + i);
-            p -= (dupes + 1);
-            i += dupes;
-        }
-        else if (prog[i] == syms[BF_RSH])
-        {
-            dupes = count_dupes_ahead(prog + i);
-            p += (dupes + 1);
-            i += dupes;
-        }
-        else if (prog[i] == syms[BF_OUT])
-        {
-            if (!index_valid(p))
-            {
-                return -1;
-            }
-
-            if (out >= max_output)
-            {
-                return -1;
-            }
-
-            output[out++] = tape[p];
-
-        }
-        else if (prog[i] == syms[BF_IN])
-        {
-            if (!index_valid(p))
-            {
-                return -1;
-            }
-
-            if (in >= input_len)
-            {
-                return -1;
-            }
-
-            tape[p] = input[in++];
-
-        }
-        else if (prog[i] == syms[BF_OPEN])
-        {
-            if (!index_valid(p))
-            {
-                return -1;
-            }
-
-            if (tape[p])
-            {
-                // Ignore obvious infinite loops
-                if (prog[i + 1] == BF_CLOSE)
+                if (!index_valid(p))
                 {
                     return -1;
                 }
 
-                if (stack_push(i) < 0)
+                dupes = count_dupes_ahead(prog + i);
+                tape[p] = (tape[p] + dupes + 1) % 256;
+                i += dupes;
+                break;
+            }
+            case '-':
+            {
+                if (!index_valid(p))
                 {
                     return -1;
                 }
 
-                depth++;
-
-            }
-            else
-            {
-                unsigned int inner_depth = 1;
-
-                while(inner_depth > 0)
+                dupes = count_dupes_ahead(prog + i);
+                if (tape[p] < (dupes + 1))
                 {
-                    i++;
+                    tape[p] = 255 - ((dupes + 1) % 256);
+                }
+                else
+                {
+                    tape[p] -= (dupes + 1);
+                }
 
-                    if (!prog[i])
+                i += dupes;
+                break;
+            }
+            case '<':
+            {
+                dupes = count_dupes_ahead(prog + i);
+                p -= (dupes + 1);
+                i += dupes;
+                break;
+            }
+            case '>':
+            {
+                dupes = count_dupes_ahead(prog + i);
+                p += (dupes + 1);
+                i += dupes;
+                break;
+            }
+            case '.':
+            {
+                if (!index_valid(p))
+                {
+                    return -1;
+                }
+
+                if (out >= max_output)
+                {
+                    return -1;
+                }
+
+                output[out++] = tape[p];
+                break;
+            }
+            case ',':
+            {
+                if (!index_valid(p))
+                {
+                    return -1;
+                }
+
+                if (in >= input_len)
+                {
+                    return -1;
+                }
+
+                tape[p] = input[in++];
+                break;
+            }
+            case '[':
+            {
+                if (!index_valid(p))
+                {
+                    return -1;
+                }
+
+                if (tape[p])
+                {
+                    // Ignore obvious infinite loops
+                    if (prog[i + 1] == ']')
                     {
                         return -1;
                     }
 
-                    if (prog[i] == syms[BF_CLOSE])
+                    if (stack_push(i) < 0)
                     {
-                        inner_depth--;
+                        return -1;
                     }
-                    else if (prog[i] == syms[BF_OPEN])
+
+                    depth++;
+
+                }
+                else
+                {
+                    unsigned int inner_depth = 1;
+
+                    while(inner_depth > 0)
                     {
-                        inner_depth++;
+                        i++;
+
+                        if (!prog[i])
+                        {
+                            return -1;
+                        }
+
+                        if (prog[i] == ']')
+                        {
+                            inner_depth--;
+                        }
+                        else if (prog[i] == '[')
+                        {
+                            inner_depth++;
+                        }
                     }
                 }
+
+                break;
             }
-
-        }
-        else if (prog[i] == syms[BF_CLOSE])
-        {
-            if (!index_valid(p))
+            case ']':
             {
-                return -1;
-            }
-
-            if (depth <= 0)
-            {
-                return -1;
-            }
-
-            if (tape[p])
-            {
-                int start;
-
-                if ((start = stack_peek()) < 0)
+                if (!index_valid(p))
                 {
                     return -1;
                 }
 
-                i = start;
-            }
-            else
-            {
-                (void)stack_pop();
-                depth--;
+                if (depth <= 0)
+                {
+                    return -1;
+                }
+
+                if (tape[p])
+                {
+                    int start;
+
+                    if ((start = stack_peek()) < 0)
+                    {
+                        return -1;
+                    }
+
+                    i = start;
+                }
+                else
+                {
+                    (void)stack_pop();
+                    depth--;
+                }
+
+                break;
             }
         }
     }
