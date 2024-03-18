@@ -114,7 +114,7 @@ int bf_rand_syms(char *output, int min_size, int max_size)
  *           duplicates after
  * @return  number of duplicates after first character
  */
-int count_dupes_ahead(char *s)
+static int count_dupes_ahead(char *s)
 {
     int i;
 
