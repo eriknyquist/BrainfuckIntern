@@ -34,6 +34,9 @@ static int stack[STACK_SIZE];
 static unsigned int pos;
 static const char *syms = "+-<>.[],";
 
+#define stack_pop() ((pos == 0) ? -1 : stack[--pos])
+#define stack_peek() ((pos == 0) ? -1 : stack[pos - 1])
+
 static int stack_push(int val)
 {
     if (pos >= STACK_SIZE)
@@ -45,27 +48,6 @@ static int stack_push(int val)
     return 0;
 }
 
-static int stack_pop(void)
-{
-    if (pos == 0)
-    {
-        return -1;
-    }
-
-
-    return stack[--pos];
-}
-
-static int stack_peek(void)
-{
-    if (pos == 0)
-    {
-        return -1;
-    }
-
-
-    return stack[pos - 1];
-}
 
 /**
  * @see bf_utils.h
