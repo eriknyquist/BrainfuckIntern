@@ -16,12 +16,12 @@
 #include "evolution.h"
 #include "common.h"
 
-#define VERSION                 ("2.1")
+#define VERSION                 ("2.2")
 
-#define DEFAULT_CROSSOVER       (0.33f)
-#define DEFAULT_ELITISM         (0.33f)
-#define DEFAULT_MUTATION        (0.33f)
-#define DEFAULT_POPSIZE         (1024)
+#define DEFAULT_CROSSOVER       (0.5f)
+#define DEFAULT_ELITISM         (0.5f)
+#define DEFAULT_MUTATION        (1.0f)
+#define DEFAULT_POPSIZE         (2048)
 #define DEFAULT_MAX_LEN         (4096)
 #define DEFAULT_OPTGENS         (1000)
 
@@ -212,8 +212,8 @@ static int _load_testcase_from_arg(char *arg)
             pos++;
         }
 
-        testcase->input_size = pos - output_skip;
-        testcase->output[testcase->input_size] = 0;
+        testcase->output_size = pos - output_skip;
+        testcase->output[testcase->output_size] = 0;
     }
     else
     {

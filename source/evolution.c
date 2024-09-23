@@ -23,18 +23,18 @@
 #endif
 
 
-#define MUTATE_STR_SIZE              (64)
+#define MUTATE_STR_SIZE              (1024)
 
 // Number of items involved in a tournament
-#define TOURNAMENT_SIZE  (6)
+#define TOURNAMENT_SIZE  (12)
 
 // If a BF program executes more than this many instructions, it will be considered timed out
-#define MAX_INSTRUCTIONS_EXEC (10000)
+#define MAX_INSTRUCTIONS_EXEC (100000)
 
 // Size of a single BF program in the population
 #define BF_PROG_SIZE_BYTES (sizeof(bf_program_t) + _config.max_program_size + 1u)
 
-#define BF_MIN_PROG_SIZE (12)
+#define BF_MIN_PROG_SIZE (2)
 
 // Convert a population index to a pointer to the corresponding BF program
 #define BF_PROG_INDEX(i) ((bf_program_t *) (((uint8_t *) _population) + (BF_PROG_SIZE_BYTES * (i))))
@@ -353,15 +353,11 @@ static void _snip_slice(bf_program_t *org, int i, int size)
         return;
     }
 
-    fflush(stdout);
-
     /* Move remaining chunk back to cover slice */
     memmove(org->text + i, org->text + i + size, org->program_len - (i + size));
 
     org->program_len -= size;
     org->text[org->program_len] = 0;
-
-    fflush(stdout);
 }
 
 static int _mutate(bf_program_t *org)
@@ -450,7 +446,7 @@ static int _mutate(bf_program_t *org)
 
         break;
 
-        /* Randomly remove 1 or more characters */
+        /* Randomly remove 1 or more contingious characters */
         case MUTATE_REMOVE_BLOCK:
             randlen = randrange(1u, org->program_len / 2u);
             i = randrange(0u, org->program_len - randlen);
@@ -458,9 +454,14 @@ static int _mutate(bf_program_t *org)
 
         break;
 
-        /* Randomly remove 1 character from wherever */
+        /* Randomly remove 1 or more non-contingous characters from wherever */
         case MUTATE_REMOVE_RANDOM:
-             _snip_slice(org, i - 1, 1);
+            randlen = randrange(1u, org->program_len / 2u);
+            for (uint32_t count = 0u; count < randlen; count++)
+            {
+                i = randrange(1u, org->program_len);
+                _snip_slice(org, i - 1, 1);
+            }
         break;
     }
 
@@ -619,6 +620,8 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
             _config.population_size, _config.max_program_size,
             _config.num_optimization_gens);
 
+    fflush(stdout);
+
     _population = malloc(alloc_size);
 
     if (NULL == _population)
@@ -670,6 +673,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
             {
                 bfi_log("(stage %d) gen. #%u, fitness %u, %s", ((int) optimizing) + 1, _generation,
                                                                _best_item->fitness, _best_item->text);
+                fflush(stdout);
             }
         }
 
