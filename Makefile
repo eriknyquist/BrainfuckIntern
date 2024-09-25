@@ -44,15 +44,22 @@ $(OUTPUT_DIR)/%.o: %.c
 output_dir:
 	[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
 
+x64_dir:
+	[ -d $(X64_DIR) ] || mkdir -p $(X64_DIR)
+
+x86_dir:
+	[ -d $(X86_DIR) ] || mkdir -p $(X86_DIR)
+
 windows_x64: CFLAGS += -O3
 windows_x64: CC := $(X64_CC)
-windows_x64: $(BUILD_OUTPUT)
+windows_x64: $(BUILD_OUTPUT) x64_dir
 	cp $(BUILD_OUTPUT).exe $(X64_DIR)/$(PROGNAME).exe
 
 windows_x86: CFLAGS += -O3
 windows_x86: CC := $(X86_CC)
-windows_x86: $(BUILD_OUTPUT)
+windows_x86: $(BUILD_OUTPUT) x86_dir
 	cp $(BUILD_OUTPUT).exe $(X86_DIR)/$(PROGNAME).exe
 
 clean:
 	[ -d $(OUTPUT_DIR) ] && rm -rf $(OUTPUT_DIR)
+	[ -d $(WIN_BUILD) ] && rm -rf $(WIN_BUILD)
