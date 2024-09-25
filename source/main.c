@@ -16,7 +16,7 @@
 #include "evolution.h"
 #include "common.h"
 
-#define VERSION                 ("2.2")
+#define VERSION                 ("2.3")
 
 #define DEFAULT_CROSSOVER       (0.5f)
 #define DEFAULT_ELITISM         (0.5f)
@@ -99,6 +99,10 @@ void help_text(char *arg0)
            "                   fittest BF program at each improved generation (default\n"
            "                   behaviour). Instead, only print the fittest Brainfuck\n"
            "                   program on termination (Ctrl-C).\n\n");
+
+    printf("-a                 Optimize for shorter Brainfuck programs throughout the\n"
+           "                   entire evolution process (instead of only after all\n"
+           "                   test cases are passing, which is default behaviour\n\n");
 
     printf("-h                 Show this text and exit.\n\n");
 
@@ -245,7 +249,7 @@ static int _parse_args(evolution_config_t *cfg, int argc, char *argv[])
 {
     char c;
 
-    while ((c = portable_getopt(argc, argv, "hqe:c:m:s:o:l:r:")) != -1)
+    while ((c = portable_getopt(argc, argv, "hqae:c:m:s:o:l:r:")) != -1)
     {
         switch (c)
         {
@@ -347,6 +351,10 @@ static int _parse_args(evolution_config_t *cfg, int argc, char *argv[])
                 break;
             }
 
+            case 'a':
+                cfg->always_penalize_length = true;
+                break;
+
             case 'q':
                 cfg->quiet = true;
                 break;
@@ -382,7 +390,7 @@ int main(int argc, char *argv[])
     time_t t;
 
     evolution_config_t config = {DEFAULT_ELITISM, DEFAULT_CROSSOVER, DEFAULT_MUTATION,
-                                 DEFAULT_POPSIZE, DEFAULT_MAX_LEN, DEFAULT_OPTGENS, false};
+                                 DEFAULT_POPSIZE, DEFAULT_MAX_LEN, DEFAULT_OPTGENS, false, false};
 
     if (_parse_args(&config, argc, argv) < 0)
     {
@@ -404,6 +412,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    uint64_t start_time = ms_since_epoch();
+
     // Runs until a BF program with fitness of 0 (best fitness) is produced, or until Ctrl-C
     int ret = evolve_bf_program(_testcases, _num_testcases, &config, output);
     if (0 != ret)
@@ -411,12 +421,20 @@ int main(int argc, char *argv[])
         return ret;
     }
 
+    uint64_t ms_elapsed = ms_since_epoch() - start_time;
+    double seconds_elapsed = (((double) ms_elapsed) / 1000.0);
+    uint64_t ex_per_sec = (output->num_bf_programs / ms_elapsed) * 1000u;
+
+    printf("\n\nTotal runtime                      : %.2f seconds\n", seconds_elapsed);
     // Print seed again, so it's easy to grab after evolution has finished
-    printf("\n\nrandom seed                        : %u\n", seedval);
 
     char countbuf[32];
     hrcount(output->num_bf_programs, countbuf, sizeof(countbuf));
-    printf("Total BF programs created/executed : %s\n\n", countbuf);
+    char ratebuf[32];
+    hrcount(ex_per_sec, ratebuf, sizeof(ratebuf));
+
+    printf("Total BF programs created/executed : %s (%s per second)\n", countbuf, ratebuf);
+    printf("random seed                        : %u\n", seedval);
     printf("Best BF program                    : %s\n\n", output->bf_program);
 
     free(output);

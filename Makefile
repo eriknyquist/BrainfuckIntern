@@ -22,7 +22,7 @@ DEBUG_FLAGS := -O0 -g3 -fsanitize=address,undefined
 PROFILE_FLAGS := -O0 -g3 $(PROFILE_ENABLE_FLAGS)
 
 CFLAGS := $(INCLUDES) -Wall -pedantic
-.PHONY: clean
+.PHONY: clean all debug profile output_dir x64_dir x86_dir windows_x64 windows_x86
 
 all: CFLAGS += -O3
 all: $(BUILD_OUTPUT)
@@ -61,5 +61,5 @@ windows_x86: $(BUILD_OUTPUT) x86_dir
 	cp $(BUILD_OUTPUT).exe $(X86_DIR)/$(PROGNAME).exe
 
 clean:
-	[ -d $(OUTPUT_DIR) ] && rm -rf $(OUTPUT_DIR)
-	[ -d $(WIN_BUILD) ] && rm -rf $(WIN_BUILD)
+	rm -rf $(OUTPUT_DIR)
+	rm -rf $(WIN_BUILD)

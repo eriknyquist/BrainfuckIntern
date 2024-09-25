@@ -37,7 +37,7 @@ typedef struct
 typedef struct
 {
     // Total number of BF programs created & executed
-    unsigned int num_bf_programs;
+    uint64_t num_bf_programs;
 
     // The final best BF program
     char bf_program[];
@@ -73,6 +73,10 @@ typedef struct
     /* Number of generations to continue even after a BF program has been produced
      * which passes all test cases. -1 to continue forever. */
     int num_optimization_gens;
+
+    /* If true, always penalize longer brainfuck programs, rather than only penalizing
+     * for length after all test cases are passing. */
+    bool always_penalize_length;
 
     /* If false, print status + fittest BF program each time a new fittest BF
      * program is produced. Otherwise, only print the fittest BF program on termination. */

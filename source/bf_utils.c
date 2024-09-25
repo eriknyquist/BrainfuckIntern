@@ -53,20 +53,20 @@ char bf_rand_sym(void)
  */
 int bf_rand_syms(char *output, int min_size, int max_size)
 {
- 	int size;
+    int size;
 
- 	if (max_size < 0)
- 	{
-  		size = min_size;
-  	}
- 	else
-  	{
-    	size = randrange(min_size, max_size);
-  	}
+    if (max_size < 0)
+    {
+        size = min_size;
+    }
+    else
+    {
+        size = randrange(min_size, max_size);
+    }
 
-   	for (int i = 0; i < size; i++)
-  	{
-    	output[i] = bf_rand_sym();
+    for (int i = 0; i < size; i++)
+    {
+        output[i] = bf_rand_sym();
     }
 
     output[size] = 0;
