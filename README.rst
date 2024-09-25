@@ -36,8 +36,8 @@ Supported Platforms
 
 Linux & Windows only. Tested on Debian and Windows 10.
 
-32 and 64 bit Windows binaries are included (``windows_build/i686/bfintern.exe``
-and ``windows_build/x86_64/bfintern.exe``).
+See `latest release <https://github.com/eriknyquist/BrainfuckIntern/releases/latest>`_
+for 32 and 64 bit Windows binaries.
 
 Usage
 =====
