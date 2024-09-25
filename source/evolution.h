@@ -37,7 +37,7 @@ typedef struct
 typedef struct
 {
     // Total number of BF programs created & executed
-    unsigned int num_bf_programs;
+    uint64_t num_bf_programs;
 
     // The final best BF program
     char bf_program[];

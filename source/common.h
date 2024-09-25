@@ -72,7 +72,12 @@ void hrsize (size_t size, char *buf, unsigned int bufsize);
  * @param   buf      pointer to location where output should be written
  * @param   bufsize  maximum number of output characters
  */
-void hrcount (unsigned int size, char *buf, unsigned int bufsize);
+void hrcount (uint64_t size, char *buf, unsigned int bufsize);
+
+/**
+ * Gets the number of milliseconds since the UNIX epoch
+ */
+uint64_t ms_since_epoch(void);
 
 /**
  * Logs a formatted string

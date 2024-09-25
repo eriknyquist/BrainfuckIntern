@@ -71,7 +71,7 @@ uint32_t randrange_except(uint32_t low, uint32_t high, uint32_t except)
  */
 float randfloat(void)
 {
-    return ((float)randrange(0u, 10000u)) / 10000.0f; 
+    return ((float)randrange(0u, 10000u)) / 10000.0f;
 }
 
 /**
@@ -115,7 +115,7 @@ void hrsize (size_t size, char *buf, unsigned int bufsize)
 /**
  * @see common.h
  */
-void hrcount (unsigned int size, char *buf, unsigned int bufsize)
+void hrcount (uint64_t size, char *buf, unsigned int bufsize)
 {
     static const char names[NUMNAMES] =
     {
@@ -180,11 +180,36 @@ static void timestamp(char *buf, int bufsize)
     }
 }
 
+uint64_t ms_since_epoch(void)
+{
+#ifdef WINDOWS
+    FILETIME ft;
+    LARGE_INTEGER li;
+
+    GetSystemTimeAsFileTime(&ft);
+    li.LowPart = ft.dwLowDateTime;
+    li.HighPart = ft.dwHighDateTime;
+
+    uint64_t ret = li.QuadPart;
+    ret -= 116444736000000000LL;
+    ret /= 10000;
+
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t ret = tv.tv_usec;
+    ret /= 1000;
+    ret += (tv.tv_sec * 1000);
+#endif
+
+    return ret;
+}
+
 /**
  * @see common.h
  */
 void bfi_log(const char* format, ...)
-{ 
+{
     va_list args;
     char tm[32];
 

@@ -404,6 +404,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    uint64_t start_time = ms_since_epoch();
+
     // Runs until a BF program with fitness of 0 (best fitness) is produced, or until Ctrl-C
     int ret = evolve_bf_program(_testcases, _num_testcases, &config, output);
     if (0 != ret)
@@ -411,12 +413,20 @@ int main(int argc, char *argv[])
         return ret;
     }
 
+    uint64_t ms_elapsed = ms_since_epoch() - start_time;
+    double seconds_elapsed = (((double) ms_elapsed) / 1000.0);
+    uint64_t ex_per_sec = (output->num_bf_programs / ms_elapsed) * 1000u;
+
+    printf("\n\nTotal runtime                      : %.2f seconds\n", seconds_elapsed);
     // Print seed again, so it's easy to grab after evolution has finished
-    printf("\n\nrandom seed                        : %u\n", seedval);
 
     char countbuf[32];
     hrcount(output->num_bf_programs, countbuf, sizeof(countbuf));
-    printf("Total BF programs created/executed : %s\n\n", countbuf);
+    char ratebuf[32];
+    hrcount(ex_per_sec, ratebuf, sizeof(ratebuf));
+
+    printf("Total BF programs created/executed : %s (%s per second)\n", countbuf, ratebuf);
+    printf("random seed                        : %u\n", seedval);
     printf("Best BF program                    : %s\n\n", output->bf_program);
 
     free(output);
