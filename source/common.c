@@ -50,7 +50,7 @@ uint32_t pcg32_rand(void)
  */
 uint32_t randrange(uint32_t low, uint32_t high)
 {
-    return (pcg32_rand() % (high + 1u - low)) + low;
+    return (pcg32_rand() % (high + 1 - low)) + low;
 }
 
 /**
@@ -182,7 +182,7 @@ static void timestamp(char *buf, int bufsize)
 
 uint64_t ms_since_epoch(void)
 {
-#ifdef WINDOWS
+#if WINDOWS
     FILETIME ft;
     LARGE_INTEGER li;
 

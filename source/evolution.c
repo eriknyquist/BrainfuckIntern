@@ -29,7 +29,7 @@
 #define TOURNAMENT_SIZE  (12)
 
 // If a BF program executes more than this many instructions, it will be considered timed out
-#define MAX_INSTRUCTIONS_EXEC (100000)
+#define MAX_INSTRUCTIONS_EXEC (10000)
 
 // Size of a single BF program in the population
 #define BF_PROG_SIZE_BYTES (sizeof(bf_program_t) + _config.max_program_size + 1u)
@@ -245,25 +245,23 @@ static int _breed(bf_program_t *p1, bf_program_t *p2, bf_program_t *c1,
     uint32_t p1i = randrange(p1->program_len / 4u, (p1->program_len / 4u) * 3u);
     uint32_t p2i = randrange(p2->program_len / 4u, (p2->program_len / 4u) * 3u);
 
-    if (((p1i + p2i) >= _config.max_program_size) ||
-        (((_config.max_program_size - p1i) + (_config.max_program_size)) >= _config.max_program_size))
-    {
-        p1i = p1->program_len / 2u;
-        p2i = p2->program_len / 2u;
-    }
     /* Copy 1st half of p1 to 1st half of c1 */
     memcpy(c1->text, p1->text, p1i);
+    c1->program_len = p1i;
 
     /* Copy 2nd half of p2 to 2nd half of c1 */
-    memcpy(c1->text + p1i, p2->text + p2i, p2->program_len - p2i);
-    c1->program_len = p1i + (p2->program_len - p2i);
+    size_t copy_size = MINVAL(_config.max_program_size - c1->program_len, p2->program_len - p2i);
+    memcpy(c1->text + p1i, p2->text + p2i, copy_size);
+    c1->program_len += copy_size;
 
     /* Copy 1st half of p2 to 1st half of c2 */
     memcpy(c2->text, p2->text, p2i);
+    c2->program_len = p2i;
 
     /* Copy 2nd half of p1 to 2nd half of c2 */
-    memcpy(c2->text + p2i, p1->text + p1i, p1->program_len - p1i);
-    c2->program_len = p2i + (p1->program_len - p1i);
+    copy_size = MINVAL(_config.max_program_size - c2->program_len, p1->program_len - p1i);
+    memcpy(c2->text + p2i, p1->text + p1i, copy_size);
+    c2->program_len += copy_size;
 
     // Make sure both new programs are at least BF_MIN_PROG_SIZE
     if (BF_MIN_PROG_SIZE > c1->program_len)
@@ -385,27 +383,39 @@ static int _mutate(bf_program_t *org)
 
         /* Move a random character to a new location */
         case MUTATE_MOVE:
-            j = randrange_except(1u, org->program_len, i);
+            if (org->program_len <= 2)
+            {
+                // Not enough characters for this mutation
+                break;
+            }
+
+            j = randrange_except(1u, org->program_len - 1, i - 1);
             c = org->text[i - 1];
 
             _snip_slice(org, i - 1, 1);
 
             if (_insert_substring(org, &c, 1, j - 1) < 0)
             {
-                // Not enough space to insert
-                return 0;
+                // Not enough space to insert, error
+                return -1;
             }
 
         break;
 
         /* Randomly copy a character */
         case MUTATE_COPY:
+            if ((org->program_len <= 1) || (org->program_len == _config.max_program_size))
+            {
+                // Not enough / too many characters for this mutation
+		break;
+            }
+
             j = randrange_except(1, org->program_len, i);
             c = org->text[i - 1];
 
             if (_insert_substring(org, &c, 1, j - 1) < 0)
             {
-                // Not enough space to insert
+                // Not enough space to insert, abort silently
                 return 0;
             }
 
@@ -413,11 +423,17 @@ static int _mutate(bf_program_t *org)
 
         /* Randomly add a character */
         case MUTATE_ADD_CHAR:
+            if (org->program_len == _config.max_program_size)
+            {
+                // Too many characters for this mutation
+		break;
+            }
+
             c = bf_rand_sym();
 
             if (_insert_substring(org, &c, 1, i - 1) < 0)
             {
-                // Not enough space to insert
+                // Not enough space to insert, abort silently
                 return 0;
             }
 
@@ -426,24 +442,28 @@ static int _mutate(bf_program_t *org)
         /* Randomly add some more characters */
         case MUTATE_ADD_STR:
         {
-            int stringlen = MINVAL(MUTATE_STR_SIZE - 1, (_config.max_program_size - org->program_len) - 1);
+            int stringlen = MINVAL(MUTATE_STR_SIZE - 1, _config.max_program_size - org->program_len);
             if (0 < stringlen)
             {
                 size = bf_rand_syms(buf, 1, stringlen);
 
                 if (_insert_substring(org, buf, size, i - 1) < 0)
                 {
-                    // Not enough space to insert
+                    // Not enough space to insert, abort silently
                     return 0;
                 }
             }
         }
         break;
 
-        /* Change a random character */
+        /* Change between 1-10 random characters */
         case MUTATE_CHANGE:
-            org->text[i - 1] = bf_rand_sym();
-
+            randlen = randrange(1u, 10u);
+            for (uint32_t count = 0u; count < randlen; count++)
+            {
+                i = randrange(1, org->program_len);
+                org->text[i - 1] = bf_rand_sym();
+            }
         break;
 
         /* Randomly remove 1 or more contingious characters */
@@ -475,7 +495,7 @@ static int _evolve(void)
     uint32_t activepos = 0u;
 
     // Always copy over the fittest program
-    //memcpy(NEXT_POP(nextpos++), ACTIVE_POP(0), BF_PROG_SIZE_BYTES);
+    memcpy(NEXT_POP(nextpos++), ACTIVE_POP(0), BF_PROG_SIZE_BYTES);
 
     for (; activepos < _elite_border; activepos++)
     {
@@ -520,8 +540,15 @@ static int _evolve(void)
         if (randfloat() <= _config.mutation)
         {
             // Mutate both new organisms
-            _mutate(next1);
-            _mutate(next2);
+            if (_mutate(next1) < 0)
+            {
+                return -1;
+            }
+
+            if (_mutate(next2) < 0)
+            {
+                return -1;
+            }
 
             new_items_added = true;
         }
@@ -554,7 +581,10 @@ static int _evolve(void)
         {
             if (randfloat() <= _config.mutation)
             {
-                _mutate(ACTIVE_POP(i));
+                if (_mutate(ACTIVE_POP(i)) < 0)
+                {
+                    return -1;
+                }
             }
         }
 
@@ -655,6 +685,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
          * be switched in.  */
         if (0 > _evolve())
         {
+            bfi_log("Error: _evolve returned -1");
             break;
         }
 
@@ -689,6 +720,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
             else
             {
                 bfi_log("start optimizing for length");
+                fflush(stdout);
 
                 _penalize_length = true;
                 optimizing = true;
