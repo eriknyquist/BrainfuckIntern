@@ -397,6 +397,7 @@ static int _mutate(bf_program_t *org)
             if (_insert_substring(org, &c, 1, j - 1) < 0)
             {
                 // Not enough space to insert, error
+		bfi_log("Not enough space to insert substring");
                 return -1;
             }
 
@@ -555,8 +556,8 @@ static int _evolve(void)
 
         if (new_items_added)
         {
-            next1->fitness = _assess_bf_program(next1, _penalize_length);
-            next2->fitness = _assess_bf_program(next2, _penalize_length);
+            next1->fitness = _assess_bf_program(next1, _penalize_length || _config.always_penalize_length);
+            next2->fitness = _assess_bf_program(next2, _penalize_length || _config.always_penalize_length);
         }
     }
 
@@ -597,7 +598,7 @@ static int _evolve(void)
         {
             bf_program_t *prog = NEXT_POP(nextpos++);
             prog->program_len = bf_rand_syms(prog->text, BF_MIN_PROG_SIZE, _config.max_program_size);
-            prog->fitness = _assess_bf_program(prog, _penalize_length);
+            prog->fitness = _assess_bf_program(prog, _penalize_length || _config.always_penalize_length);
         }
     }
 
@@ -669,7 +670,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     {
         bf_program_t *prog = ACTIVE_POP(i);
         prog->program_len = bf_rand_syms(prog->text, BF_MIN_PROG_SIZE, config->max_program_size);
-        prog->fitness = _assess_bf_program(prog, _penalize_length);
+        prog->fitness = _assess_bf_program(prog, _penalize_length || config->always_penalize_length);
     }
 
     _sort_active_population();
@@ -710,7 +711,9 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
 
         _generation++;
 
-        if ((0u == _best_item->fitness) && !optimizing)
+	uint32_t target_fitness = (config->always_penalize_length) ? _best_item->program_len : 0u;
+
+        if ((target_fitness == _best_item->fitness) && !optimizing)
         {
             // If fitness reached 0, check if we need to do any optimzation passes
             if (0 == _config.num_optimization_gens)
@@ -719,7 +722,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
             }
             else
             {
-                bfi_log("start optimizing for length");
+                bfi_log("%s optimizing for length", config->always_penalize_length ? "continue" : "start");
                 fflush(stdout);
 
                 _penalize_length = true;
@@ -729,10 +732,10 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
                 for (unsigned int i = 0; i < _config.population_size; i++)
                 {
                     bf_program_t *prog = ACTIVE_POP(i);
-                    prog->fitness = _assess_bf_program(prog, _penalize_length);
+                    prog->fitness = _assess_bf_program(prog, _penalize_length || config->always_penalize_length);
                 }
 
-                _best_item->fitness = _assess_bf_program(_best_item, _penalize_length);
+                _best_item->fitness = _assess_bf_program(_best_item, _penalize_length || config->always_penalize_length);
 
                 // Re-sort
                 _sort_active_population();

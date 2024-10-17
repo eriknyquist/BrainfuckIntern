@@ -74,6 +74,10 @@ typedef struct
      * which passes all test cases. -1 to continue forever. */
     int num_optimization_gens;
 
+    /* If true, always penalize longer brainfuck programs, rather than only penalizing
+     * for length after all test cases are passing. */
+    bool always_penalize_length;
+
     /* If false, print status + fittest BF program each time a new fittest BF
      * program is produced. Otherwise, only print the fittest BF program on termination. */
     bool quiet;

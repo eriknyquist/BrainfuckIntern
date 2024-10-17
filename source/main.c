@@ -100,6 +100,10 @@ void help_text(char *arg0)
            "                   behaviour). Instead, only print the fittest Brainfuck\n"
            "                   program on termination (Ctrl-C).\n\n");
 
+    printf("-a                 Optimize for shorter Brainfuck programs throughout the\n"
+           "                   entire evolution process (instead of only after all\n"
+	   "                   test cases are passing, which is default behaviour\n\n");
+
     printf("-h                 Show this text and exit.\n\n");
 
     printf("EXAMPLES:\n\n");
@@ -245,7 +249,7 @@ static int _parse_args(evolution_config_t *cfg, int argc, char *argv[])
 {
     char c;
 
-    while ((c = portable_getopt(argc, argv, "hqe:c:m:s:o:l:r:")) != -1)
+    while ((c = portable_getopt(argc, argv, "hqae:c:m:s:o:l:r:")) != -1)
     {
         switch (c)
         {
@@ -347,6 +351,10 @@ static int _parse_args(evolution_config_t *cfg, int argc, char *argv[])
                 break;
             }
 
+            case 'a':
+                cfg->always_penalize_length = true;
+                break;
+
             case 'q':
                 cfg->quiet = true;
                 break;
@@ -382,7 +390,7 @@ int main(int argc, char *argv[])
     time_t t;
 
     evolution_config_t config = {DEFAULT_ELITISM, DEFAULT_CROSSOVER, DEFAULT_MUTATION,
-                                 DEFAULT_POPSIZE, DEFAULT_MAX_LEN, DEFAULT_OPTGENS, false};
+                                 DEFAULT_POPSIZE, DEFAULT_MAX_LEN, DEFAULT_OPTGENS, false, false};
 
     if (_parse_args(&config, argc, argv) < 0)
     {
