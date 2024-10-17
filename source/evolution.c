@@ -32,7 +32,7 @@
 #define MAX_INSTRUCTIONS_EXEC (10000)
 
 // Size of a single BF program in the population
-#define BF_PROG_SIZE_BYTES (sizeof(bf_program_t) + _config.max_program_size + 1u)
+#define BF_PROG_SIZE_BYTES (sizeof(bf_program_t) + _config->max_program_size + 1u)
 
 #define BF_MIN_PROG_SIZE (2)
 
@@ -40,10 +40,10 @@
 #define BF_PROG_INDEX(i) ((bf_program_t *) (((uint8_t *) _population) + (BF_PROG_SIZE_BYTES * (i))))
 
 // Get a pointer to a BF program by index, in the active population
-#define ACTIVE_POP(i) BF_PROG_INDEX(i + (_active_pop_index * _config.population_size))
+#define ACTIVE_POP(i) BF_PROG_INDEX(i + (_active_pop_index * _config->population_size))
 
 // Get a pointer to a BF program by index, in the next population
-#define NEXT_POP(i)   BF_PROG_INDEX(i + ((!_active_pop_index) * _config.population_size))
+#define NEXT_POP(i)   BF_PROG_INDEX(i + ((!_active_pop_index) * _config->population_size))
 
 #define MINVAL(x, y) (((x) < (y)) ? x : y)
 
@@ -101,7 +101,7 @@ static bf_program_t *_population = NULL;
 static bf_program_t *_best_item;
 
 static bool _penalize_length = false;
-static evolution_config_t _config;
+static evolution_config_t *_config;
 
 
 #if WINDOWS
@@ -142,7 +142,7 @@ static int _cmporgs(const void *a, const void *b)
 // Uses qsort to sort the entire population based on fitness
 static void _sort_active_population(void)
 {
-    qsort(ACTIVE_POP(0), _config.population_size, BF_PROG_SIZE_BYTES, _cmporgs);
+    qsort(ACTIVE_POP(0), _config->population_size, BF_PROG_SIZE_BYTES, _cmporgs);
 }
 
 // Assess the fitness of a BF program by running all provided test cases.
@@ -218,14 +218,14 @@ static bf_program_t *_tournament(void)
     bf_program_t *best;
     uint32_t org;
 
-    org = randrange(0u, _config.population_size - 1u);
+    org = randrange(0u, _config->population_size - 1u);
     best = curr = ACTIVE_POP(org);
 
     // Run all but the last tournament match
-    uint32_t tournament_size = MINVAL(TOURNAMENT_SIZE, _config.population_size);
+    uint32_t tournament_size = MINVAL(TOURNAMENT_SIZE, _config->population_size);
     for (uint32_t i = 1u; i <= tournament_size; i++)
     {
-        org = randrange(0u, _config.population_size - 1u);
+        org = randrange(0u, _config->population_size - 1u);
         curr = ACTIVE_POP(org);
 
         if (curr->fitness < best->fitness)
@@ -250,7 +250,7 @@ static int _breed(bf_program_t *p1, bf_program_t *p2, bf_program_t *c1,
     c1->program_len = p1i;
 
     /* Copy 2nd half of p2 to 2nd half of c1 */
-    size_t copy_size = MINVAL(_config.max_program_size - c1->program_len, p2->program_len - p2i);
+    size_t copy_size = MINVAL(_config->max_program_size - c1->program_len, p2->program_len - p2i);
     memcpy(c1->text + p1i, p2->text + p2i, copy_size);
     c1->program_len += copy_size;
 
@@ -259,7 +259,7 @@ static int _breed(bf_program_t *p1, bf_program_t *p2, bf_program_t *c1,
     c2->program_len = p2i;
 
     /* Copy 2nd half of p1 to 2nd half of c2 */
-    copy_size = MINVAL(_config.max_program_size - c2->program_len, p1->program_len - p1i);
+    copy_size = MINVAL(_config->max_program_size - c2->program_len, p1->program_len - p1i);
     memcpy(c2->text + p2i, p1->text + p1i, copy_size);
     c2->program_len += copy_size;
 
@@ -309,7 +309,7 @@ static int _insert_substring(bf_program_t *org, char *sub, int size, int i)
         return -1;
     }
 
-    if ((org->program_len + size) > _config.max_program_size)
+    if ((org->program_len + size) > _config->max_program_size)
     {
         return -1;
     }
@@ -405,7 +405,7 @@ static int _mutate(bf_program_t *org)
 
         /* Randomly copy a character */
         case MUTATE_COPY:
-            if ((org->program_len <= 1) || (org->program_len == _config.max_program_size))
+            if ((org->program_len <= 1) || (org->program_len == _config->max_program_size))
             {
                 // Not enough / too many characters for this mutation
 		break;
@@ -424,7 +424,7 @@ static int _mutate(bf_program_t *org)
 
         /* Randomly add a character */
         case MUTATE_ADD_CHAR:
-            if (org->program_len == _config.max_program_size)
+            if (org->program_len == _config->max_program_size)
             {
                 // Too many characters for this mutation
 		break;
@@ -443,7 +443,7 @@ static int _mutate(bf_program_t *org)
         /* Randomly add some more characters */
         case MUTATE_ADD_STR:
         {
-            int stringlen = MINVAL(MUTATE_STR_SIZE - 1, _config.max_program_size - org->program_len);
+            int stringlen = MINVAL(MUTATE_STR_SIZE - 1, _config->max_program_size - org->program_len);
             if (0 < stringlen)
             {
                 size = bf_rand_syms(buf, 1, stringlen);
@@ -502,7 +502,7 @@ static int _evolve(void)
     {
         bool new_items_added = false;
 
-        if (nextpos >= (_config.population_size - 1u))
+        if (nextpos >= (_config->population_size - 1u))
         {
             // next population is full, we're done with this loop
             break;
@@ -522,7 +522,7 @@ static int _evolve(void)
         bf_program_t *next1 = NEXT_POP(nextpos++);
         bf_program_t *next2 = NEXT_POP(nextpos++);
 
-        if ((randfloat() <= _config.crossover) || (0u == activepos))
+        if ((randfloat() <= _config->crossover) || (0u == activepos))
         {
             if (0 > _breed(curr1, curr2, next1, next2))
             {
@@ -538,7 +538,7 @@ static int _evolve(void)
             memcpy(next2, curr2, BF_PROG_SIZE_BYTES);
         }
 
-        if (randfloat() <= _config.mutation)
+        if (randfloat() <= _config->mutation)
         {
             // Mutate both new organisms
             if (_mutate(next1) < 0)
@@ -556,20 +556,20 @@ static int _evolve(void)
 
         if (new_items_added)
         {
-            next1->fitness = _assess_bf_program(next1, _penalize_length || _config.always_penalize_length);
-            next2->fitness = _assess_bf_program(next2, _penalize_length || _config.always_penalize_length);
+            next1->fitness = _assess_bf_program(next1, _penalize_length || _config->always_penalize_length);
+            next2->fitness = _assess_bf_program(next2, _penalize_length || _config->always_penalize_length);
         }
     }
 
     /* If finished evolution, and there are still items remaining in the active
      * population that we didn't get to, then just copy them over as-is to the
      * next population */
-    int next_remaining = _config.population_size - nextpos;
+    int next_remaining = _config->population_size - nextpos;
     if (0 < next_remaining)
     {
         int copy_index = activepos;
         int copy_count = next_remaining;
-        int active_remaining = _config.population_size - copy_index;
+        int active_remaining = _config->population_size - copy_index;
 
         if (active_remaining < next_remaining)
         {
@@ -580,7 +580,7 @@ static int _evolve(void)
         // Mutate organisms before copying
         for (int i = copy_index; i < copy_index + copy_count; i++)
         {
-            if (randfloat() <= _config.mutation)
+            if (randfloat() <= _config->mutation)
             {
                 if (_mutate(ACTIVE_POP(i)) < 0)
                 {
@@ -594,11 +594,11 @@ static int _evolve(void)
 
         /* If we still haven't filled up the next population, then generate some
          * new random BF programs */
-        while (nextpos < _config.population_size)
+        while (nextpos < _config->population_size)
         {
             bf_program_t *prog = NEXT_POP(nextpos++);
-            prog->program_len = bf_rand_syms(prog->text, BF_MIN_PROG_SIZE, _config.max_program_size);
-            prog->fitness = _assess_bf_program(prog, _penalize_length || _config.always_penalize_length);
+            prog->program_len = bf_rand_syms(prog->text, BF_MIN_PROG_SIZE, _config->max_program_size);
+            prog->fitness = _assess_bf_program(prog, _penalize_length || _config->always_penalize_length);
         }
     }
 
@@ -634,10 +634,10 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     _testcases = testcases;
     _num_testcases = num_testcases;
     _elite_border = (unsigned int) (((float) config->population_size) * config->elitism);
-    _config = *config;
+    _config = config;
 
     // Account for null terminator
-    _config.max_program_size -= 1u;
+    _config->max_program_size -= 1u;
 
     size_t alloc_size = ((config->population_size * BF_PROG_SIZE_BYTES) * 2u) + BF_PROG_SIZE_BYTES;
 
@@ -646,10 +646,10 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     bfi_log("%s allocated", sizebuf);
 
     bfi_log("elitism=%.2f, crossover=%.2f, mutation=%.2f",
-            _config.elitism, _config.crossover, _config.mutation);
+            _config->elitism, _config->crossover, _config->mutation);
     bfi_log("population_size=%u, max_program_size=%u, optimization_generations=%d",
-            _config.population_size, _config.max_program_size,
-            _config.num_optimization_gens);
+            _config->population_size, _config->max_program_size,
+            _config->num_optimization_gens);
 
     fflush(stdout);
 
@@ -701,7 +701,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
         {
             memcpy(_best_item, ACTIVE_POP(0), BF_PROG_SIZE_BYTES);
 
-            if (!_config.quiet)
+            if (!_config->quiet)
             {
                 bfi_log("(stage %d) gen. #%u, fitness %u, %s", ((int) optimizing) + 1, _generation,
                                                                _best_item->fitness, _best_item->text);
@@ -716,7 +716,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
         if ((target_fitness == _best_item->fitness) && !optimizing)
         {
             // If fitness reached 0, check if we need to do any optimzation passes
-            if (0 == _config.num_optimization_gens)
+            if (0 == _config->num_optimization_gens)
             {
                 _stopped = true;
             }
@@ -729,7 +729,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
                 optimizing = true;
 
                 // Re-assess fitness of all items, now that we are optimizing for length
-                for (unsigned int i = 0; i < _config.population_size; i++)
+                for (unsigned int i = 0; i < _config->population_size; i++)
                 {
                     bf_program_t *prog = ACTIVE_POP(i);
                     prog->fitness = _assess_bf_program(prog, _penalize_length || config->always_penalize_length);
@@ -747,9 +747,9 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
         else if (optimizing)
         {
             // If in optimization passes, check if we're ready to stop
-            if (0 < _config.num_optimization_gens)
+            if (0 < _config->num_optimization_gens)
             {
-                if (++optgen_count >= _config.num_optimization_gens)
+                if (++optgen_count >= _config->num_optimization_gens)
                 {
                     _stopped = true;
                 }
@@ -758,7 +758,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     }
 
     // populate output
-    output->num_bf_programs = _config.population_size * _generation;
+    output->num_bf_programs = _config->population_size * _generation;
     (void) memcpy(output->bf_program, _best_item->text, _best_item->program_len + 1u);
 
     free(_population);

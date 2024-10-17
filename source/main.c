@@ -102,7 +102,7 @@ void help_text(char *arg0)
 
     printf("-a                 Optimize for shorter Brainfuck programs throughout the\n"
            "                   entire evolution process (instead of only after all\n"
-	   "                   test cases are passing, which is default behaviour\n\n");
+           "                   test cases are passing, which is default behaviour\n\n");
 
     printf("-h                 Show this text and exit.\n\n");
 
