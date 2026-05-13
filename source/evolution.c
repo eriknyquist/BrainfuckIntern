@@ -28,9 +28,6 @@
 // Number of items involved in a tournament
 #define TOURNAMENT_SIZE  (12)
 
-// If a BF program executes more than this many instructions, it will be considered timed out
-#define MAX_INSTRUCTIONS_EXEC (10000)
-
 // Size of a single BF program in the population
 #define BF_PROG_SIZE_BYTES (sizeof(bf_program_t) + config->max_program_size + 1u)
 
@@ -162,7 +159,7 @@ static uint32_t _assess_bf_program(bf_program_t *prog, bool penalize_length)
     {
         char output[MAX_TESTCASE_OUTPUT_SIZE];
         int len = bf_interpret(prog->text, _testcases[i].input, _testcases[i].input_size,
-                               output, MAX_TESTCASE_OUTPUT_SIZE - 1u, MAX_INSTRUCTIONS_EXEC);
+                               output, MAX_TESTCASE_OUTPUT_SIZE - 1u, _testcases[i].output_size * 5000);
 
         if (len <= 0)
         {
