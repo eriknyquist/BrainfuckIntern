@@ -11,7 +11,7 @@
 #include <string.h>
 #include "common.h"
 
-#define TAPE_SIZE  300000
+#define TAPE_SIZE  4096
 
 #define STACK_SIZE 2048
 
