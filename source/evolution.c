@@ -241,13 +241,48 @@ static bf_program_t *_tournament(evolution_config_t *config)
     return best;
 }
 
+/*
+ * Pick a split point in [lo, hi] where bracket nesting depth is 0, chosen
+ * uniformly at random via reservoir sampling. Falls back to a plain randrange
+ * if no depth-0 position exists in the range (e.g. the program is entirely
+ * inside a loop). Single O(n) pass, no allocation.
+ */
+static uint32_t _depth0_split(const char *text, size_t len, uint32_t lo, uint32_t hi)
+{
+    int depth = 0;
+    int count = 0;
+    uint32_t result = randrange(lo, hi);
+
+    for (uint32_t i = 0; i <= len; i++)
+    {
+        if (depth == 0 && i >= lo && i <= hi)
+        {
+            count++;
+            if (randrange(0, count - 1) == 0)
+            {
+                result = i;
+            }
+        }
+
+        if (i < len)
+        {
+            if      (text[i] == '[') depth++;
+            else if (text[i] == ']' && depth > 0) depth--;
+        }
+    }
+
+    return result;
+}
+
 // Create 2 new BF programs by randomly combining slices from 2 existing BF programs
 static int _breed(evolution_config_t *config, bf_program_t *p1, bf_program_t *p2,
                   bf_program_t *c1, bf_program_t *c2)
 {
-    /* Split each parent randomly between the 1st and 3rd quarter */
-    uint32_t p1i = randrange(p1->program_len / 4u, (p1->program_len / 4u) * 3u);
-    uint32_t p2i = randrange(p2->program_len / 4u, (p2->program_len / 4u) * 3u);
+    /* Split each parent at a depth-0 point between the 1st and 3rd quarter */
+    uint32_t p1i = _depth0_split(p1->text, p1->program_len,
+                                 p1->program_len / 4u, (p1->program_len / 4u) * 3u);
+    uint32_t p2i = _depth0_split(p2->text, p2->program_len,
+                                 p2->program_len / 4u, (p2->program_len / 4u) * 3u);
 
     /* Copy 1st half of p1 to 1st half of c1 */
     memcpy(c1->text, p1->text, p1i);
