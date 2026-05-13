@@ -195,7 +195,7 @@ static uint32_t _assess_bf_program(bf_program_t *prog, bool penalize_length)
             char a = _testcases[i].output[j];
             char b = output[j];
             //uint32_t fitness_add = (uint32_t) (abs(a - b) * ((smallest_size - j) + 1)) * 1000u;
-            uint32_t fitness_add = (uint32_t) (abs(a - b) * 1000u);
+            uint32_t fitness_add = (uint32_t) (abs(a - b) * 10000u);
             if (fitness <= (UINT32_MAX - fitness_add))
             {
                 fitness += fitness_add;
