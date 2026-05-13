@@ -24,7 +24,7 @@ PROFILE_FLAGS := -O0 -g3 $(PROFILE_ENABLE_FLAGS)
 CFLAGS := $(INCLUDES) -Wall -pedantic
 .PHONY: clean all debug profile output_dir x64_dir x86_dir windows_x64 windows_x86
 
-all: CFLAGS += -O3
+all: CFLAGS += -O2
 all: $(BUILD_OUTPUT)
 
 debug: CFLAGS += $(INCLUDES) $(DEBUG_FLAGS)

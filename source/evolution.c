@@ -39,8 +39,11 @@
 // Convert a population index to a pointer to the corresponding BF program
 #define BF_PROG_INDEX(i) ((bf_program_t *) (((uint8_t *) _population) + (BF_PROG_SIZE_BYTES * (i))))
 
-// Get a pointer to a BF program by index, in the active population
-#define ACTIVE_POP(i) BF_PROG_INDEX(i + (_active_pop_index * config->population_size))
+// Get a pointer to a BF program by raw index in the active half (unsorted)
+#define ACTIVE_POP_RAW(i) BF_PROG_INDEX(i + (_active_pop_index * config->population_size))
+
+// Get a pointer to the i-th fittest BF program in the active population (sorted order)
+#define ACTIVE_POP(i) (_sorted_pop[(i)])
 
 // Get a pointer to a BF program by index, in the next population
 #define NEXT_POP(i)   BF_PROG_INDEX(i + ((!_active_pop_index) * config->population_size))
@@ -98,6 +101,7 @@ static uint32_t _generation = 0u;
 static evolution_testcase_t *_testcases = NULL;
 static unsigned int _num_testcases = 0u;
 static bf_program_t *_population = NULL;
+static bf_program_t **_sorted_pop = NULL;
 static bf_program_t *_best_item;
 
 static bool _penalize_length = false;
@@ -120,11 +124,11 @@ static void sighandler(int signo)
 }
 
 
-// qsort compare function to sort BF programs by their fitness value
+// qsort compare function to sort bf_program_t pointers by fitness
 static int _cmporgs(const void *a, const void *b)
 {
-    bf_program_t *pa = (bf_program_t *)a;
-    bf_program_t *pb = (bf_program_t *)b;
+    const bf_program_t *pa = *(const bf_program_t **)a;
+    const bf_program_t *pb = *(const bf_program_t **)b;
 
     if (pa->fitness > pb->fitness)
     {
@@ -138,10 +142,14 @@ static int _cmporgs(const void *a, const void *b)
     return 0;
 }
 
-// Uses qsort to sort the entire population based on fitness
+// Initialises the sorted pointer array and sorts it by fitness
 static void _sort_active_population(evolution_config_t *config)
 {
-    qsort(ACTIVE_POP(0), config->population_size, BF_PROG_SIZE_BYTES, _cmporgs);
+    for (uint32_t i = 0; i < config->population_size; i++)
+    {
+        _sorted_pop[i] = ACTIVE_POP_RAW(i);
+    }
+    qsort(_sorted_pop, config->population_size, sizeof(bf_program_t *), _cmporgs);
 }
 
 // Assess the fitness of a BF program by running all provided test cases.
@@ -588,7 +596,10 @@ static int _evolve(evolution_config_t *config)
             }
         }
 
-        memcpy(NEXT_POP(nextpos), ACTIVE_POP(copy_index), BF_PROG_SIZE_BYTES * copy_count);
+        for (int i = 0; i < copy_count; i++)
+        {
+            memcpy(NEXT_POP(nextpos + i), ACTIVE_POP(copy_index + i), BF_PROG_SIZE_BYTES);
+        }
         nextpos += copy_count;
 
         /* If we still haven't filled up the next population, then generate some
@@ -637,7 +648,9 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     // Account for null terminator
     config->max_program_size -= 1u;
 
-    size_t alloc_size = ((config->population_size * BF_PROG_SIZE_BYTES) * 2u) + BF_PROG_SIZE_BYTES;
+    size_t pop_size = ((config->population_size * BF_PROG_SIZE_BYTES) * 2u) + BF_PROG_SIZE_BYTES;
+    size_t sorted_pop_size = config->population_size * sizeof(bf_program_t *);
+    size_t alloc_size = sorted_pop_size + pop_size;
 
     char sizebuf[64];
     hrsize(alloc_size, sizebuf, sizeof(sizebuf));
@@ -651,13 +664,15 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
 
     fflush(stdout);
 
-    _population = malloc(alloc_size);
+    _sorted_pop = malloc(alloc_size);
 
-    if (NULL == _population)
+    if (NULL == _sorted_pop)
     {
         bfi_log("Failed to allocate memory");
         return -1;
     }
+
+    _population = (bf_program_t *) ((uint8_t *) _sorted_pop + sorted_pop_size);
 
     // Pre-calculate pointer to best item buffer
     _best_item = (bf_program_t *) (((uint8_t *) _population) + (BF_PROG_SIZE_BYTES * config->population_size * 2));
@@ -666,7 +681,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     // Generate initial population of completely random BF programs
     for (unsigned int i = 0; i < config->population_size; i++)
     {
-        bf_program_t *prog = ACTIVE_POP(i);
+        bf_program_t *prog = ACTIVE_POP_RAW(i);
         prog->program_len = bf_rand_syms(prog->text, BF_MIN_PROG_SIZE, config->max_program_size);
         prog->fitness = _assess_bf_program(prog, _penalize_length || config->always_penalize_length);
     }
@@ -759,7 +774,9 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     output->num_bf_programs = config->population_size * _generation;
     (void) memcpy(output->bf_program, _best_item->text, _best_item->program_len + 1u);
 
-    free(_population);
+    free(_sorted_pop);
+    _sorted_pop = NULL;
+    _population = NULL;
 
     return 0;
 }
