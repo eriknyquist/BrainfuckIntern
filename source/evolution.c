@@ -584,7 +584,7 @@ static int _evolve(evolution_config_t *config)
         }
 
 
-        // Mutate organisms before copying
+        // Mutate organisms before copying, reassessing fitness after each mutation
         for (int i = copy_index; i < copy_index + copy_count; i++)
         {
             if (randfloat() <= config->mutation)
@@ -593,6 +593,7 @@ static int _evolve(evolution_config_t *config)
                 {
                     return -1;
                 }
+                ACTIVE_POP(i)->fitness = _assess_bf_program(ACTIVE_POP(i), _penalize_length || config->always_penalize_length);
             }
         }
 
