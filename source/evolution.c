@@ -722,8 +722,9 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
     _sort_active_population(config);
 
 
-    unsigned int optgen_count = 0u;  // Number of optimization generations we've done
-    bool optimizing = false;         // Flag to indicate whether we're in the optimization stage
+    unsigned int optgen_count = 0u;           // Number of optimization generations we've done
+    bool optimizing = false;                  // Flag to indicate whether we're in the optimization stage
+    uint32_t generations_since_improvement = 0u;
 
     while (!_stopped)
     {
@@ -746,6 +747,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
         if (ACTIVE_POP(0)->fitness < _best_item->fitness)
         {
             memcpy(_best_item, ACTIVE_POP(0), BF_PROG_SIZE_BYTES);
+            generations_since_improvement = 0u;
 
             if (!config->quiet)
             {
@@ -754,10 +756,14 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
                 fflush(stdout);
             }
         }
+        else
+        {
+            generations_since_improvement++;
+        }
 
         _generation++;
 
-	uint32_t target_fitness = (config->always_penalize_length) ? _best_item->program_len : 0u;
+        uint32_t target_fitness = (config->always_penalize_length) ? _best_item->program_len : 0u;
 
         if ((target_fitness == _best_item->fitness) && !optimizing)
         {
@@ -773,6 +779,7 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
 
                 _penalize_length = true;
                 optimizing = true;
+                generations_since_improvement = 0u;
 
                 // Re-assess fitness of all items, now that we are optimizing for length
                 for (unsigned int i = 0; i < config->population_size; i++)
@@ -800,6 +807,26 @@ int evolve_bf_program(evolution_testcase_t *testcases, unsigned int num_testcase
                     _stopped = true;
                 }
             }
+        }
+
+        if (generations_since_improvement >= 500u)
+        {
+            uint32_t num_to_replace = (uint32_t)(config->population_size * 0.4f);
+            uint32_t replace_start  = config->population_size - num_to_replace;
+
+            bfi_log("(stage %d) gen. #%u: stagnated for 500 generations, injecting %u random programs",
+                    ((int) optimizing) + 1, _generation, num_to_replace);
+            fflush(stdout);
+
+            for (uint32_t i = replace_start; i < config->population_size; i++)
+            {
+                bf_program_t *prog = ACTIVE_POP(i);
+                prog->program_len = bf_rand_syms(prog->text, BF_MIN_PROG_SIZE, config->max_program_size);
+                prog->fitness = _assess_bf_program(prog, _penalize_length || config->always_penalize_length);
+            }
+
+            _sort_active_population(config);
+            generations_since_improvement = 0u;
         }
     }
 

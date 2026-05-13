@@ -20,7 +20,7 @@
 
 #define DEFAULT_CROSSOVER       (0.5f)
 #define DEFAULT_ELITISM         (0.5f)
-#define DEFAULT_MUTATION        (1.0f)
+#define DEFAULT_MUTATION        (0.5f)
 #define DEFAULT_POPSIZE         (2048)
 #define DEFAULT_MAX_LEN         (4096)
 #define DEFAULT_OPTGENS         (1000)
